@@ -2,12 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* KamerWays Bus Reservation System Design Tokens 
+All colors MUST be HSL for proper theming.
 */
 
 @layer base {
   :root {
+    /* Core Brand Colors */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -17,26 +18,52 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    /* KamerWays Brand Primary - Professional Blue */
+    --primary: 218 82% 45%;
     --primary-foreground: 210 40% 98%;
+    --primary-hover: 218 82% 35%;
 
-    --secondary: 210 40% 96.1%;
+    /* Complementary Colors */
+    --secondary: 45 85% 95%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
+    /* Status Colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
+    /* UI Elements */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 34 89% 92%;
+    --accent-foreground: 222.2 47.4% 11.2%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 218 82% 45%;
 
-    --radius: 0.5rem;
+    /* Design System */
+    --radius: 0.75rem;
+
+    /* KamerWays Specific */
+    --bus-accent: 34 89% 55%;
+    --travel-secondary: 210 15% 85%;
+    --premium-gold: 45 85% 65%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(218 82% 45%), hsl(218 82% 35%));
+    --gradient-hero: linear-gradient(135deg, hsl(218 82% 45%), hsl(34 89% 55%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 40% 98%));
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -8px hsl(218 82% 45% / 0.15);
+    --shadow-medium: 0 8px 30px -12px hsl(218 82% 45% / 0.25);
+    --shadow-strong: 0 16px 40px -16px hsl(218 82% 45% / 0.35);
+
+    /* Animation */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --sidebar-background: 0 0% 98%;
 
@@ -56,33 +83,55 @@ All colors MUST be HSL.
   }
 
   .dark {
+    /* Dark Mode Core */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 222.2 84% 6%;
     --card-foreground: 210 40% 98%;
 
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Dark Mode Brand */
+    --primary: 218 82% 55%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --primary-hover: 218 82% 65%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
+    /* Dark Status Colors */
+    --success: 142 76% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 60%;
+    --warning-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 210 40% 98%;
 
+    /* Dark UI Elements */
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 20%;
+    --accent-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 218 82% 55%;
+
+    /* Dark KamerWays Specific */
+    --bus-accent: 34 89% 65%;
+    --travel-secondary: 217.2 32.6% 25%;
+    --premium-gold: 45 85% 75%;
+
+    /* Dark Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(218 82% 55%), hsl(218 82% 45%));
+    --gradient-hero: linear-gradient(135deg, hsl(218 82% 45%), hsl(34 89% 45%));
+    --gradient-card: linear-gradient(145deg, hsl(222.2 84% 6%), hsl(217.2 32.6% 8%));
+
+    /* Dark Shadows */
+    --shadow-soft: 0 4px 20px -8px hsl(0 0% 0% / 0.3);
+    --shadow-medium: 0 8px 30px -12px hsl(0 0% 0% / 0.4);
+    --shadow-strong: 0 16px 40px -16px hsl(0 0% 0% / 0.5);
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -100,6 +149,56 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+@layer components {
+  /* KamerWays utility classes */
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .shadow-brand {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-brand-medium {
+    box-shadow: var(--shadow-medium);
+  }
+
+  .shadow-brand-strong {
+    box-shadow: var(--shadow-strong);
+  }
+
+  .transition-brand {
+    transition: var(--transition-smooth);
+  }
+
+  .glass-effect {
+    backdrop-filter: blur(20px);
+    background: hsl(var(--background) / 0.8);
+    border: 1px solid hsl(var(--border) / 0.5);
   }
 }
