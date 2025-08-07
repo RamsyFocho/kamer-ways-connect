@@ -1,0 +1,34 @@
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { LayoutDashboard, Building, Map, Users } from 'lucide-react';
+
+const navItems = [
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/admin/agencies', label: 'Agencies', icon: Building },
+  { to: '/admin/routes', label: 'Routes', icon: Map },
+  { to: '/admin/users', label: 'Users', icon: Users },
+];
+
+const AdminSidebar: React.FC = () => (
+  <aside className="w-full md:w-64 bg-white border-r min-h-screen p-4">
+    <nav className="space-y-2">
+      {navItems.map(({ to, label, icon: Icon }) => (
+        <NavLink
+          key={to}
+          to={to}
+          className={({ isActive }) =>
+            `flex items-center px-4 py-2 rounded-lg transition-colors font-medium text-base ${
+              isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
+            }`
+          }
+          end
+        >
+          <Icon className="h-5 w-5 mr-3" />
+          {label}
+        </NavLink>
+      ))}
+    </nav>
+  </aside>
+);
+
+export default AdminSidebar;

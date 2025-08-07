@@ -12,6 +12,9 @@ import AgencyDetailPage from "./pages/AgencyDetailPage";
 import BookingPage from "./pages/BookingPage";
 import LoginPage from "./pages/LoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminAgenciesPage from "./pages/AdminAgenciesPage";
+import AdminRoutesPage from "./pages/AdminRoutesPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
@@ -54,6 +57,30 @@ const App = () => (
                       <AdminDashboard />
                     </ProtectedRoute>
                   } 
+                />
+                <Route
+                  path="/admin/agencies"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminAgenciesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/routes"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminRoutesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminUsersPage />
+                    </ProtectedRoute>
+                  }
                 />
                 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
