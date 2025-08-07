@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { defaultCredentials } from '@/lib/mock-data';
 
 export default function LoginPage() {
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
   const location = useLocation();
@@ -23,10 +23,16 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const from = location.state?.from?.pathname || '/';
 
-  if (isAuthenticated) {
-    return <Navigate to={from} replace />;
+  // Redirect based on user role after login
+  if (isAuthenticated && user) {
+    if (user.role === 'admin') {
+      return <Navigate to="/admin" replace />;
+    } else if (user.role === 'customer') {
+      return <Navigate to="/bookings" replace />;
+    } else {
+      return <Navigate to="/" replace />;
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
