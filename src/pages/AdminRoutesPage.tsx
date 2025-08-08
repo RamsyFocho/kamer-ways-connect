@@ -1,7 +1,73 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AdminSidebar from '@/components/layout/AdminSidebar';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { mockRoutes, Route } from '@/lib/mock-data';
+
+// Simulate API with local state for now
+const fetchRoutes = async () => {
+  return Promise.resolve(mockRoutes);
+};
 
 const AdminRoutesPage: React.FC = () => {
+  const queryClient = useQueryClient();
+  const [newRoute, setNewRoute] = useState<Omit<Route, 'id'>>({ 
+    agencyId: '', from: '', to: '', departureTime: '', arrivalTime: '', 
+    duration: '', price: 0, busType: '', amenities: [], availableSeats: 0, totalSeats: 0, date: '' 
+  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<Partial<Route>>({});
+
+  const { data: routes = [], isLoading } = useQuery({ queryKey: ['routes'], queryFn: fetchRoutes });
+
+  // Mutations
+  const createMutation = useMutation({
+    mutationFn: async (route: Omit<Route, 'id'>) => {
+      const newId = 'route-' + (Math.random() * 100000).toFixed(0);
+      const newRouteObj = { ...route, id: newId } as Route;
+      return [...routes, newRouteObj];
+    },
+    onSuccess: (data) => queryClient.setQueryData(['routes'], data)
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (route: Partial<Route> & { id: string }) => {
+      return routes.map(r => r.id === route.id ? { ...r, ...route } : r);
+    },
+    onSuccess: (data) => queryClient.setQueryData(['routes'], data)
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return routes.filter(r => r.id !== id);
+    },
+    onSuccess: (data) => queryClient.setQueryData(['routes'], data)
+  });
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    createMutation.mutate(newRoute);
+    setNewRoute({ 
+      agencyId: '', from: '', to: '', departureTime: '', arrivalTime: '', 
+      duration: '', price: 0, busType: '', amenities: [], availableSeats: 0, totalSeats: 0, date: '' 
+    });
+  };
+
+  const handleEdit = (route: Route) => {
+    setEditingId(route.id);
+    setEditData(route);
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingId) {
+      updateMutation.mutate({ ...editData, id: editingId });
+      setEditingId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="flex">
@@ -10,7 +76,71 @@ const AdminRoutesPage: React.FC = () => {
         </div>
         <main className="flex-1 px-4 py-8">
           <h2 className="text-2xl font-bold mb-4">Manage Routes</h2>
-          <p>Route CRUD UI coming soon...</p>
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Add New Route</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form className="grid grid-cols-1 md:grid-cols-3 gap-4" onSubmit={handleCreate}>
+                <Input placeholder="Agency ID" value={newRoute.agencyId} onChange={e => setNewRoute({ ...newRoute, agencyId: e.target.value })} required />
+                <Input placeholder="From" value={newRoute.from} onChange={e => setNewRoute({ ...newRoute, from: e.target.value })} required />
+                <Input placeholder="To" value={newRoute.to} onChange={e => setNewRoute({ ...newRoute, to: e.target.value })} required />
+                <Input placeholder="Price" type="number" value={newRoute.price} onChange={e => setNewRoute({ ...newRoute, price: Number(e.target.value) })} required />
+                <Input placeholder="Departure Time" value={newRoute.departureTime} onChange={e => setNewRoute({ ...newRoute, departureTime: e.target.value })} required />
+                <Input placeholder="Arrival Time" value={newRoute.arrivalTime} onChange={e => setNewRoute({ ...newRoute, arrivalTime: e.target.value })} required />
+                <Input placeholder="Duration" value={newRoute.duration} onChange={e => setNewRoute({ ...newRoute, duration: e.target.value })} required />
+                <Button type="submit" disabled={createMutation.isPending} className="md:col-span-3">Add Route</Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>All Routes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div>Loading...</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="p-2 text-left">From</th>
+                        <th className="p-2 text-left">To</th>
+                        <th className="p-2 text-left">Price</th>
+                        <th className="p-2 text-left">Agency</th>
+                        <th className="p-2 text-left">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {routes.map((route) => (
+                        <tr key={route.id} className="border-b">
+                          <td className="p-2">{editingId === route.id ? <Input value={editData.from} onChange={e => setEditData({...editData, from: e.target.value})} /> : route.from}</td>
+                          <td className="p-2">{editingId === route.id ? <Input value={editData.to} onChange={e => setEditData({...editData, to: e.target.value})} /> : route.to}</td>
+                          <td className="p-2">{editingId === route.id ? <Input type="number" value={editData.price} onChange={e => setEditData({...editData, price: Number(e.target.value)})} /> : route.price}</td>
+                          <td className="p-2">{route.agencyId}</td>
+                          <td className="p-2 space-x-2">
+                            {editingId === route.id ? (
+                              <>
+                                <Button size="sm" onClick={handleUpdate} disabled={updateMutation.isPending}>Save</Button>
+                                <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>Cancel</Button>
+                              </>
+                            ) : (
+                              <>
+                                <Button size="sm" variant="outline" onClick={() => handleEdit(route)}>Edit</Button>
+                                <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(route.id)}>Delete</Button>
+                              </>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </main>
       </div>
     </div>

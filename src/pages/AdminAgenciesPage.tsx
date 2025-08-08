@@ -17,7 +17,7 @@ const AdminAgenciesPage: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState({ name: '', logo: '', description: '' });
 
-  const { data: agencies = [], isLoading } = useQuery(['agencies'], fetchAgencies);
+    const { data: agencies = [], isLoading } = useQuery({ queryKey: ['agencies'], queryFn: fetchAgencies });
 
   // Mutations (simulate with local cache)
   const createMutation = useMutation({
