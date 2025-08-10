@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { mockApi, Agency } from '@/lib/mock-data';
+import { mockApi, Agency } from '@/lib/mock-data.ts';
+import SEO from '@/components/Seo';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
 
@@ -53,10 +54,19 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Book Bus Tickets Online in Cameroon"
+        description="Easily book bus tickets for travel across Cameroon. Compare prices from top agencies, and enjoy a seamless booking experience with KamerWays Connect."
+        keywords={["bus travel Cameroon", "online bus booking", "KamerWays Connect", "Douala to Yaounde", "bus tickets"]}
+      />
       <Header />
       
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
+      <section className="relative py-20 lg:py-32 overflow-hidden"
+      style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://readdy.ai/api/search-image?query=modern%20luxury%20bus%20traveling%20on%20scenic%20highway%20with%20beautiful%20landscape%20mountains%20and%20blue%20sky%20in%20background%20professional%20transportation%20photography%20clean%20minimalist%20composition&width=1440&height=600&seq=hero001&orientation=landscape')`,
+        }}
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-bus-accent/10" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div 

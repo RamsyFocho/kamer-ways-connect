@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import SEO from '@/components/Seo';
 import { useToast } from '@/hooks/use-toast';
 
 export default function BookingPage() {
@@ -27,6 +28,11 @@ export default function BookingPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Complete Your Booking"
+        description="Enter your details to complete your bus ticket booking. Secure your seat for travel across Cameroon with KamerWays Connect."
+        keywords={["complete booking", "passenger details", "bus ticket payment", "KamerWays Connect"]}
+      />
       <Header />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <h1 className="text-3xl font-bold mb-8">Book Your Journey</h1>

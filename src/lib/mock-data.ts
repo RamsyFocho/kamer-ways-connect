@@ -1,68 +1,7 @@
 // Mock data for KamerWays Bus Reservation System
 
-export interface Agency {
-  id: string;
-  name: string;
-  logo: string;
-  rating: number;
-  reviewCount: number;
-  established: number;
-  fleetSize: number;
-  description: string;
-  features: string[];
-  routes: Route[];
-}
-
-export interface Route {
-  id: string;
-  agencyId: string;
-  from: string;
-  to: string;
-  departureTime: string;
-  arrivalTime: string;
-  duration: string;
-  price: number;
-  busType: string;
-  amenities: string[];
-  availableSeats: number;
-  totalSeats: number;
-  date: string;
-}
-
-export interface Booking {
-  id: string;
-  userId: string;
-  routeId: string;
-  agencyId: string;
-  passengerDetails: {
-    name: string;
-    email: string;
-    phone: string;
-    age: number;
-    gender: 'male' | 'female' | 'other';
-    idNumber: string;
-  };
-  seatNumbers: string[];
-  totalAmount: number;
-  status: 'confirmed' | 'pending' | 'cancelled';
-  bookingDate: string;
-  paymentMethod: string;
-  paymentStatus: 'paid' | 'pending' | 'failed';
-}
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: 'customer' | 'admin';
-  joinDate: string;
-  totalBookings: number;
-  preferredLanguage: 'en' | 'fr' | 'es';
-}
-
 // Mock Agencies Data
-export const mockAgencies: Agency[] = [
+export const mockAgencies = [
   {
     id: 'agency-1',
     name: 'KamerWays Express',
@@ -114,7 +53,7 @@ export const mockAgencies: Agency[] = [
 ];
 
 // Mock Routes Data
-export const mockRoutes: Route[] = [
+export const mockRoutes = [
   {
     id: 'route-1',
     agencyId: 'agency-1',
@@ -193,7 +132,7 @@ export const mockRoutes: Route[] = [
 ];
 
 // Mock Users Data
-export const mockUsers: User[] = [
+export const mockUsers = [
   {
     id: 'user-1',
     name: 'John Doe',
@@ -217,7 +156,7 @@ export const mockUsers: User[] = [
 ];
 
 // Mock Bookings Data
-export const mockBookings: Booking[] = [
+export const mockBookings = [
   {
     id: 'booking-1',
     userId: 'user-1',
@@ -288,30 +227,30 @@ export const defaultCredentials = {
 export const mockApi = {
   // Agencies
   getAgencies: () => Promise.resolve(mockAgencies),
-  getAgency: (id: string) => Promise.resolve(mockAgencies.find(a => a.id === id)),
+  getAgency: (id) => Promise.resolve(mockAgencies.find(a => a.id === id)),
   
   // Routes
-  getRoutes: (params?: { from?: string; to?: string; date?: string; agencyId?: string }) => {
+  getRoutes: (params) => {
     let routes = mockRoutes;
-    if (params?.from) routes = routes.filter(r => r.from.toLowerCase().includes(params.from!.toLowerCase()));
-    if (params?.to) routes = routes.filter(r => r.to.toLowerCase().includes(params.to!.toLowerCase()));
+    if (params?.from) routes = routes.filter(r => r.from.toLowerCase().includes(params.from.toLowerCase()));
+    if (params?.to) routes = routes.filter(r => r.to.toLowerCase().includes(params.to.toLowerCase()));
     if (params?.date) routes = routes.filter(r => r.date === params.date);
     if (params?.agencyId) routes = routes.filter(r => r.agencyId === params.agencyId);
     return Promise.resolve(routes);
   },
   
   // Bookings
-  createBooking: (booking: Omit<Booking, 'id'>) => {
+  createBooking: (booking) => {
     const newBooking = { ...booking, id: `booking-${Date.now()}` };
     mockBookings.push(newBooking);
     return Promise.resolve(newBooking);
   },
   
-  getUserBookings: (userId: string) => 
+  getUserBookings: (userId) => 
     Promise.resolve(mockBookings.filter(b => b.userId === userId)),
   
   // Auth
-  login: (email: string, password: string) => {
+  login: (email, password) => {
     if (email === defaultCredentials.admin.email && password === defaultCredentials.admin.password) {
       return Promise.resolve({ user: defaultCredentials.admin.user, token: 'admin-token' });
     }

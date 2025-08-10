@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import SEO from '@/components/Seo';
 import { mockApi, Agency, Route } from '@/lib/mock-data';
 
 export default function AgencyDetailPage() {
@@ -23,6 +24,11 @@ export default function AgencyDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={`${agency.name} - Bus Routes & Booking`}
+        description={`Find and book bus tickets for routes operated by ${agency.name}. View schedules, prices, and available seats for travel across Cameroon.`}
+        keywords={[agency.name, "bus routes", "book tickets", ...routes.map(r => `${r.from} to ${r.to}`)]}
+      />
       <Header />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-4">{agency.name}</h1>

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import SEO from '@/components/Seo';
 import { mockApi, Agency } from '@/lib/mock-data';
 
 export default function AgenciesPage() {
@@ -23,6 +24,11 @@ export default function AgenciesPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="All Bus Agencies"
+        description="Browse all bus agencies operating in Cameroon. Find the best travel companies for your journey and book your tickets with KamerWays Connect."
+        keywords={["bus agencies Cameroon", "travel companies Cameroon", "KamerWays Express", "Cameroon Transit"]}
+      />
       <Header />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Bus Agencies</h1>
