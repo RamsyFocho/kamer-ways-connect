@@ -12,6 +12,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { mockApi, Route } from '@/lib/mock-data';
 import { CheckCircle, XCircle, Bus, MapPin, Clock, Users } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PaymentOptions } from '@/components/PaymentOptions';
 
 interface BookingData {
   name: string;
@@ -21,6 +22,9 @@ interface BookingData {
   gender: 'male' | 'female' | 'other';
   idNumber: string;
   selectedSeats: string[];
+  paymentMethod: string;
+  mobileMoneyProvider: string;
+  mobileNumber: string;
 }
 
 export default function BookingPage() {
@@ -33,10 +37,13 @@ export default function BookingPage() {
     name: '',
     email: '',
     phone: '',
-    age: '',
-    gender: 'male',
+    // age: '',
+    // gender: 'male',
     idNumber: '',
     selectedSeats: [],
+    paymentMethod: '',
+    mobileMoneyProvider: '',
+    mobileNumber: '',
   });
 
   const { data: route, isLoading: isRouteLoading, error: routeError } = useQuery({
@@ -86,7 +93,17 @@ export default function BookingPage() {
       toast({ title: 'Selection Error', description: 'Please select at least one seat.', variant: 'destructive' });
       return;
     }
-
+    if (!bookingData.paymentMethod) {
+      toast({ title: 'Payment Error', description: 'Please select a payment method.', variant: 'destructive' });
+      return;
+    }
+    if (bookingData.paymentMethod === 'mobile_money') {
+      if (!bookingData.mobileMoneyProvider || !bookingData.mobileNumber) {
+        toast({ title: 'Mobile Money Error', description: 'Please select a provider and enter your number.', variant: 'destructive' });
+        return;
+      }
+    }
+    // Add more validation for bank card if needed
     const newBooking = {
       userId: 'user-1', // Mock user ID
       routeId: route.id,
@@ -95,17 +112,20 @@ export default function BookingPage() {
         name: bookingData.name,
         email: bookingData.email,
         phone: bookingData.phone,
-        age: Number(bookingData.age),
-        gender: bookingData.gender,
+        // age: Number(bookingData.age),
+        // gender: bookingData.gender,
         idNumber: bookingData.idNumber,
       },
       seatNumbers: bookingData.selectedSeats,
       totalAmount: route.price * bookingData.selectedSeats.length,
       status: 'pending', // Initial status
       bookingDate: new Date().toISOString().split('T')[0],
-      paymentMethod: 'mobile_money', // Default mock payment
+      paymentMethod: bookingData.paymentMethod,
       paymentStatus: 'pending', // Default mock payment status
+      mobileMoneyProvider: bookingData.paymentMethod === 'mobile_money' ? bookingData.mobileMoneyProvider : undefined,
+      mobileNumber: bookingData.paymentMethod === 'mobile_money' ? bookingData.mobileNumber : undefined,
     };
+    console.log(newBooking);
     createBookingMutation.mutate(newBooking);
   };
 
@@ -167,7 +187,7 @@ export default function BookingPage() {
                   required
                 />
               </div>
-              <div>
+              {/* <div>
                 <Label htmlFor="age">Age</Label>
                 <Input
                   id="age"
@@ -176,10 +196,10 @@ export default function BookingPage() {
                   onChange={(e) => setBookingData({...bookingData, age: e.target.value})}
                   required
                 />
-              </div>
+              </div> */}
             </div>
 
-            <div>
+            {/* <div>
               <Label htmlFor="gender">Gender</Label>
               <Select onValueChange={value => setBookingData({ ...bookingData, gender: value as 'male' | 'female' | 'other' })} defaultValue={bookingData.gender}>
                   <SelectTrigger><SelectValue placeholder="Select Gender" /></SelectTrigger>
@@ -189,7 +209,7 @@ export default function BookingPage() {
                       <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
               </Select>
-            </div>
+            </div> */}
 
             <div>
               <Label htmlFor="idNumber">ID Number</Label>
@@ -276,17 +296,15 @@ export default function BookingPage() {
         return (
           <div className="space-y-4">
             <h3 className="text-xl font-semibold">Payment Information</h3>
-            <Card>
-              <CardContent className="p-4 space-y-2">
-                <p className="text-lg">Total Amount: <span className="font-bold text-primary">{(route.price * bookingData.selectedSeats.length).toLocaleString()} FCFA</span></p>
-                <p className="text-muted-foreground">Payment integration coming soon. For now, click 'Confirm Booking' to proceed.</p>
-                {/* Placeholder for payment form */}
-                <div className="border p-4 rounded-md text-center text-sm text-muted-foreground">
-                  <p>Mock Payment Gateway</p>
-                  <p>No real payment will be processed.</p>
-                </div>
-              </CardContent>
-            </Card>
+            <PaymentOptions
+              selectedPaymentMethod={bookingData.paymentMethod}
+              setSelectedPaymentMethod={method => setBookingData(prev => ({ ...prev, paymentMethod: method }))}
+              mobileMoneyProvider={bookingData.mobileMoneyProvider}
+              setMobileMoneyProvider={provider => setBookingData(prev => ({ ...prev, mobileMoneyProvider: provider }))}
+              mobileNumber={bookingData.mobileNumber}
+              setMobileNumber={num => setBookingData(prev => ({ ...prev, mobileNumber: num }))}
+              totalAmount={route.price * bookingData.selectedSeats.length}
+            />
             <div className="flex justify-between">
               <Button variant="outline" onClick={handleBack}>Back</Button>
               <Button onClick={handleConfirmBooking} disabled={createBookingMutation.isPending}>
