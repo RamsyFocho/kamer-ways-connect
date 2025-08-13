@@ -7,6 +7,7 @@ const navItems = [
   { to: '/admin/agencies', label: 'Agencies', icon: Building },
   { to: '/admin/routes', label: 'Routes', icon: Map },
   { to: '/admin/users', label: 'Users', icon: Users },
+  { to: '/admin/bookings', label: 'Bookings', icon: LayoutDashboard }, // Using LayoutDashboard for now, can be changed
 ];
 
 const AdminSidebar: React.FC = () => (

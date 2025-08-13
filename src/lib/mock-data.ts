@@ -223,6 +223,24 @@ export const defaultCredentials = {
   }
 };
 
+// Notification Data
+export const mockNotifications = [
+  {
+    id: 'notif-1',
+    userId: 'user-1',
+    message: 'Your booking for route Douala to Yaoundé has been confirmed!',
+    read: false,
+    timestamp: '2024-08-07T10:00:00Z',
+  },
+  {
+    id: 'notif-2',
+    userId: 'admin-1',
+    message: 'New booking received from John Doe.',
+    read: false,
+    timestamp: '2024-08-07T10:05:00Z',
+  },
+];
+
 // API Mock Functions
 export const mockApi = {
   // Agencies
@@ -238,14 +256,44 @@ export const mockApi = {
     if (params?.agencyId) routes = routes.filter(r => r.agencyId === params.agencyId);
     return Promise.resolve(routes);
   },
+  getRoute: (id) => Promise.resolve(mockRoutes.find(r => r.id === id)),
   
   // Bookings
   createBooking: (booking) => {
     const newBooking = { ...booking, id: `booking-${Date.now()}` };
     mockBookings.push(newBooking);
+    // Simulate notification for user and admin
+    mockApi.addNotification({
+      userId: newBooking.userId,
+      message: `Your booking for route ${newBooking.passengerDetails.name} has been ${newBooking.status}!`, 
+      read: false,
+      timestamp: new Date().toISOString(),
+    });
+    mockApi.addNotification({
+      userId: 'admin-1', // Notify admin
+      message: `New booking received from ${newBooking.passengerDetails.name} for route ${newBooking.routeId}.`, 
+      read: false,
+      timestamp: new Date().toISOString(),
+    });
     return Promise.resolve(newBooking);
   },
-  
+  getBooking: (id) => Promise.resolve(mockBookings.find(b => b.id === id)),
+  getAllBookings: () => Promise.resolve(mockBookings),
+  updateBookingStatus: (id, newStatus) => {
+    const bookingIndex = mockBookings.findIndex(b => b.id === id);
+    if (bookingIndex > -1) {
+      mockBookings[bookingIndex].status = newStatus;
+      // Simulate notification for user about status change
+      mockApi.addNotification({
+        userId: mockBookings[bookingIndex].userId,
+        message: `Your booking ${id} status has been updated to ${newStatus}.`, 
+        read: false,
+        timestamp: new Date().toISOString(),
+      });
+      return Promise.resolve(mockBookings[bookingIndex]);
+    }
+    return Promise.reject(new Error('Booking not found'));
+  },
   getUserBookings: (userId) => 
     Promise.resolve(mockBookings.filter(b => b.userId === userId)),
   
@@ -261,5 +309,21 @@ export const mockApi = {
   },
   
   // Analytics
-  getAnalytics: () => Promise.resolve(mockAnalytics)
+  getAnalytics: () => Promise.resolve(mockAnalytics),
+
+  // Notifications
+  addNotification: (notification) => {
+    const newNotif = { ...notification, id: `notif-${Date.now()}` };
+    mockNotifications.push(newNotif);
+    return Promise.resolve(newNotif);
+  },
+  getNotifications: (userId) => Promise.resolve(mockNotifications.filter(n => n.userId === userId)),
+  markNotificationAsRead: (id) => {
+    const notifIndex = mockNotifications.findIndex(n => n.id === id);
+    if (notifIndex > -1) {
+      mockNotifications[notifIndex].read = true;
+      return Promise.resolve(mockNotifications[notifIndex]);
+    }
+    return Promise.reject(new Error('Notification not found'));
+  },
 };

@@ -11,11 +11,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import NotificationCenter from '@/components/NotificationCenter';
+import { Bell } from 'lucide-react';
 
 export function Header() {
   const { user, logout, isAuthenticated } = useAuth();
   const { t } = useLanguage();
+  const { unreadCount } = useNotifications();
   const location = useLocation();
 
   const navigation = [
@@ -62,6 +66,24 @@ export function Header() {
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
+            {isAuthenticated && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Bell className="h-5 w-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-80 p-0">
+                  <NotificationCenter />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

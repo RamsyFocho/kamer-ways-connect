@@ -7,14 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { mockApi, Agency } from '@/lib/mock-data.ts';
+import { mockApi, mockAgencies } from '@/lib/mock-data.ts';
 import SEO from '@/components/Seo';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
+import HeroSection from '@/components/Hero/HeroSection';
 
 const Index = () => {
   const { t } = useLanguage();
-  const [agencies, setAgencies] = useState<Agency[]>([]);
+  const [agencies, setAgencies] = useState<mockAgencies[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -57,56 +58,44 @@ const Index = () => {
       <SEO 
         title="Book Bus Tickets Online in Cameroon"
         description="Easily book bus tickets for travel across Cameroon. Compare prices from top agencies, and enjoy a seamless booking experience with KamerWays Connect."
-        keywords={["bus travel Cameroon", "online bus booking", "KamerWays Connect", "Douala to Yaounde", "bus tickets"]}
-      />
+        keywords={["bus travel Cameroon", "online bus booking", "KamerWays", "Douala to Yaounde", "bus tickets","Bus","Cameroon","Africa","Douala","Yaounde","Bamenda","Travel","Bus Travel","Bus Booking"]}
+      >
+        <script type="application/ld+json">
+          {`
+            {
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "KamerWays Connect",
+              "url": "https://kamer-ways-connect.com",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://kamer-ways-connect.com/agencies?search={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            }
+          `}
+        </script>
+        <script type="application/ld+json">
+          {`
+            {
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "KamerWays Connect",
+              "url": "https://kamer-ways-connect.com",
+              "logo": "https://kamer-ways-connect.com/logo.png",
+              "sameAs": [
+                "https://www.facebook.com/kamerwaysconnect",
+                "https://twitter.com/kamerwaysconnect",
+                "https://www.instagram.com/kamerwaysconnect"
+              ]
+            }
+          `}
+        </script>
+      </SEO>
       <Header />
       
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden"
-      style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://readdy.ai/api/search-image?query=modern%20luxury%20bus%20traveling%20on%20scenic%20highway%20with%20beautiful%20landscape%20mountains%20and%20blue%20sky%20in%20background%20professional%20transportation%20photography%20clean%20minimalist%20composition&width=1440&height=600&seq=hero001&orientation=landscape')`,
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-bus-accent/10" />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <motion.div 
-            className="text-center max-w-4xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              <span className="gradient-text">{t('home.title')}</span>
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              {t('home.subtitle')}
-            </p>
-            
-            {/* Search Bar */}
-            <div className="max-w-2xl mx-auto mb-8">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-                <Input
-                  type="text"
-                  placeholder={t('home.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-12 text-lg shadow-brand"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="shadow-brand-medium" asChild>
-                <Link to="/agencies">{t('home.bookNow')}</Link>
-              </Button>
-              <Button variant="outline" size="lg" asChild>
-                <Link to="/agencies">{t('home.viewAgencies')}</Link>
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <HeroSection/>
 
       {/* Stats Section */}
       <section className="py-16 bg-muted/50">
