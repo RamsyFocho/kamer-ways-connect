@@ -51,11 +51,27 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="flex">
-        <div className="hidden md:block">
+      <div className="flex relative">
+        {/* Desktop Sidebar */}
+        <AdminSidebar />
+        
+        {/* Mobile Sidebar Toggle */}
+        <div className="md:hidden absolute top-4 left-4 z-50">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => document.querySelector('.mobile-sidebar')?.classList.toggle('hidden')}
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+        </div>
+
+        {/* Mobile Sidebar */}
+        <div className="mobile-sidebar hidden md:hidden absolute left-0 top-0 h-full w-64 z-40 bg-sidebar border-r">
           <AdminSidebar />
         </div>
-        <main className="flex-1 px-4 py-8">
+
+        <main className="flex-1 px-4 py-8 md:ml-64">
           <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {stats.map((stat) => (

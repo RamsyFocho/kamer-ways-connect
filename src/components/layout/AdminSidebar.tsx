@@ -12,13 +12,12 @@ const navItems = [
 ];
 
 const AdminSidebar: React.FC = () => {
-  const { theme } = useTheme();
+  const { actualTheme } = useTheme();
 
   return (
     <aside
-      className={`w-full md:w-64 border-r min-h-screen p-4 ${
-        theme === 'dark' ? 'bg-card text-card-foreground' : 'bg-white'
-      }`}
+      className="hidden md:flex md:flex-col w-64 min-h-screen border-r bg-sidebar text-sidebar-foreground p-4"
+      data-theme={actualTheme}
     >
       <nav className="space-y-2">
         {navItems.map(({ to, label, icon: Icon }) => (
