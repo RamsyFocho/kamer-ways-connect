@@ -3,12 +3,13 @@ import React from 'react';
 import { Header } from '@/components/layout/Header';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Bus, DollarSign, TrendingUp } from 'lucide-react';
+import { Users, Bus, DollarSign, TrendingUp, Menu } from 'lucide-react';
 import CustomLineChart from '@/components/ui/CustomLineChart';
 import CustomBarChart from '@/components/ui/CustomBarChart';
 import CustomPieChart from '@/components/ui/CustomPieChart';
+import { Button } from '@/components/ui/button';
 
-export default function AdminDashboard() {
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const stats = [
     { title: 'Total Bookings', value: '15,420', icon: TrendingUp },
     { title: 'Total Revenue', value: '462M FCFA', icon: DollarSign },
@@ -51,29 +52,23 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      {/* Mobile Sidebar Toggle Button */}
+      <div className="md:hidden fixed top-4 left-4 z-50">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Open sidebar"
+        >
+          <Menu className="h-6 w-6" />
+        </Button>
+      </div>
       <div className="flex relative">
-        {/* Desktop Sidebar */}
-        <AdminSidebar />
-        
-        {/* Mobile Sidebar Toggle */}
-        <div className="md:hidden absolute top-4 left-4 z-50">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => document.querySelector('.mobile-sidebar')?.classList.toggle('hidden')}
-          >
-            <Menu className="h-6 w-6" />
-          </Button>
-        </div>
-
-        {/* Mobile Sidebar */}
-        <div className="mobile-sidebar hidden md:hidden absolute left-0 top-0 h-full w-64 z-40 bg-sidebar border-r">
-          <AdminSidebar />
-        </div>
-
-        <main className="flex-1 px-4 py-8 md:ml-64">
+        {/* Sidebar: desktop and mobile drawer */}
+        <AdminSidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <main className="flex-1 px-2 sm:px-4 py-8 md:ml-64 transition-all duration-300">
           <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
             {stats.map((stat) => (
               <Card key={stat.title}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -86,7 +81,7 @@ export default function AdminDashboard() {
               </Card>
             ))}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 mb-8">
             <Card>
               <CardHeader>
                 <CardTitle>Bookings Trend (Line Chart)</CardTitle>
