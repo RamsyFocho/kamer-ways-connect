@@ -37,8 +37,8 @@ export default function BookingPage() {
     name: '',
     email: '',
     phone: '',
-    // age: '',
-    // gender: 'male',
+    age: '',
+    gender: 'male',
     idNumber: '',
     selectedSeats: [],
     paymentMethod: '',
@@ -112,8 +112,8 @@ export default function BookingPage() {
         name: bookingData.name,
         email: bookingData.email,
         phone: bookingData.phone,
-        // age: Number(bookingData.age),
-        // gender: bookingData.gender,
+        age: Number(bookingData.age),
+        gender: bookingData.gender,
         idNumber: bookingData.idNumber,
       },
       seatNumbers: bookingData.selectedSeats,
@@ -187,7 +187,7 @@ export default function BookingPage() {
                   required
                 />
               </div>
-              {/* <div>
+              <div>
                 <Label htmlFor="age">Age</Label>
                 <Input
                   id="age"
@@ -196,10 +196,10 @@ export default function BookingPage() {
                   onChange={(e) => setBookingData({...bookingData, age: e.target.value})}
                   required
                 />
-              </div> */}
+              </div>
             </div>
 
-            {/* <div>
+            <div>
               <Label htmlFor="gender">Gender</Label>
               <Select onValueChange={value => setBookingData({ ...bookingData, gender: value as 'male' | 'female' | 'other' })} defaultValue={bookingData.gender}>
                   <SelectTrigger><SelectValue placeholder="Select Gender" /></SelectTrigger>
@@ -209,7 +209,7 @@ export default function BookingPage() {
                       <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
               </Select>
-            </div> */}
+            </div>
 
             <div>
               <Label htmlFor="idNumber">ID Number</Label>

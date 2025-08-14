@@ -194,7 +194,7 @@ export const mockRoutes = [
 ];
 
 // Mock Users Data
-export const mockUsers = [
+export const mockUsers: User[] = [
   {
     id: 'user-1',
     name: 'John Doe',

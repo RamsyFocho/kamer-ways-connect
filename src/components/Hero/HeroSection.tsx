@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 
-export default function Hero({ searchQuery, setSearchQuery }) {
+export default function Hero({ searchQuery, setSearchQuery }: { searchQuery: string; setSearchQuery: (query: string) => void }) {
   return (
     <section
       className="relative min-h-[70vh] flex items-center overflow-hidden"

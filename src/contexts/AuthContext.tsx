@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await mockApi.login(email, password);
-      setUser(response.user!);
+      setUser(response.user as User);
       localStorage.setItem('kamerways-user', JSON.stringify(response.user));
       localStorage.setItem('kamerways-token', response.token);
     } catch (error) {

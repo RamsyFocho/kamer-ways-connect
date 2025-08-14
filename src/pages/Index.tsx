@@ -15,7 +15,7 @@ import HeroSection from '@/components/Hero/HeroSection';
 
 const Index = () => {
   const { t } = useLanguage();
-  const [agencies, setAgencies] = useState<mockAgencies[]>([]);
+  const [agencies, setAgencies] = useState<typeof mockAgencies>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -59,43 +59,41 @@ const Index = () => {
         title="Book Bus Tickets Online in Cameroon"
         description="Easily book bus tickets for travel across Cameroon. Compare prices from top agencies, and enjoy a seamless booking experience with KamerWays Connect."
         keywords={["bus travel Cameroon", "online bus booking", "KamerWays", "Douala to Yaounde", "bus tickets","Bus","Cameroon","Africa","Douala","Yaounde","Bamenda","Travel","Bus Travel","Bus Booking"]}
-      >
-        <script type="application/ld+json">
-          {`
-            {
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              "name": "KamerWays Connect",
-              "url": "https://kamer-ways-connect.com",
-              "potentialAction": {
-                "@type": "SearchAction",
-                "target": "https://kamer-ways-connect.com/agencies?search={search_term_string}",
-                "query-input": "required name=search_term_string"
-              }
-            }
-          `}
-        </script>
-        <script type="application/ld+json">
-          {`
-            {
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "name": "KamerWays Connect",
-              "url": "https://kamer-ways-connect.com",
-              "logo": "https://kamer-ways-connect.com/logo.png",
-              "sameAs": [
-                "https://www.facebook.com/kamerwaysconnect",
-                "https://twitter.com/kamerwaysconnect",
-                "https://www.instagram.com/kamerwaysconnect"
-              ]
-            }
-          `}
-        </script>
-      </SEO>
+      />
+      
+      {/* SEO Structured Data */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "KamerWays Connect",
+          "url": "https://kamer-ways-connect.com",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://kamer-ways-connect.com/agencies?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        })
+      }} />
+      
+      <script type="application/ld+json" dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "KamerWays Connect",
+          "url": "https://kamer-ways-connect.com",
+          "logo": "https://kamer-ways-connect.com/logo.png",
+          "sameAs": [
+            "https://www.facebook.com/kamerwaysconnect",
+            "https://twitter.com/kamerwaysconnect",
+            "https://www.instagram.com/kamerwaysconnect"
+          ]
+        })
+      }} />
       <Header />
       
       {/* Hero Section */}
-      <HeroSection/>
+      <HeroSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
       {/* Stats Section */}
       <section className="py-16 bg-muted/50">
