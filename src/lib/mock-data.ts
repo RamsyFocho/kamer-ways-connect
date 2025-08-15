@@ -1,5 +1,67 @@
 // Mock data for KamerWays Bus Reservation System
 
+// TypeScript Interfaces
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: 'customer' | 'admin';
+  joinDate: string;
+  totalBookings: number;
+  preferredLanguage: string;
+}
+
+export interface Agency {
+  id: string;
+  name: string;
+  logo: string;
+  rating: number;
+  reviewCount: number;
+  established: number;
+  fleetSize: number;
+  description: string;
+  features: string[];
+  routes: string[];
+}
+
+export interface Route {
+  id: string;
+  agencyId: string;
+  from: string;
+  to: string;
+  departureTime: string;
+  arrivalTime: string;
+  duration: string;
+  price: number;
+  busType: string;
+  amenities: string[];
+  availableSeats: number;
+  totalSeats: number;
+  date: string;
+}
+
+export interface Booking {
+  id: string;
+  userId: string;
+  routeId: string;
+  agencyId: string;
+  passengerDetails: {
+    name: string;
+    email: string;
+    phone: string;
+    age: number;
+    gender: string;
+    idNumber: string;
+  };
+  seatNumbers: string[];
+  totalAmount: number;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'refunded' | 'failed' | 'in_progress' | 'completed';
+  bookingDate: string;
+  paymentMethod: string;
+  paymentStatus: string;
+}
+
 // Mock Agencies Data
 export const mockAgencies = [
   {
@@ -132,7 +194,7 @@ export const mockRoutes = [
 ];
 
 // Mock Users Data
-export const mockUsers = [
+export const mockUsers: User[] = [
   {
     id: 'user-1',
     name: 'John Doe',
@@ -156,7 +218,7 @@ export const mockUsers = [
 ];
 
 // Mock Bookings Data
-export const mockBookings = [
+export const mockBookings: Booking[] = [
   {
     id: 'booking-1',
     userId: 'user-1',
@@ -176,6 +238,66 @@ export const mockBookings = [
     bookingDate: '2024-08-07',
     paymentMethod: 'mobile_money',
     paymentStatus: 'paid'
+  },
+  {
+    id: 'booking-2',
+    userId: 'user-1',
+    routeId: 'route-3',
+    agencyId: 'agency-2',
+    passengerDetails: {
+      name: 'Jane Smith',
+      email: 'jane.smith@email.com',
+      phone: '+237987654321',
+      age: 28,
+      gender: 'female',
+      idNumber: 'ID987654321'
+    },
+    seatNumbers: ['B15'],
+    totalAmount: 25000,
+    status: 'pending',
+    bookingDate: '2024-08-08',
+    paymentMethod: 'card',
+    paymentStatus: 'pending'
+  },
+  {
+    id: 'booking-3',
+    userId: 'user-1',
+    routeId: 'route-4',
+    agencyId: 'agency-3',
+    passengerDetails: {
+      name: 'Mike Johnson',
+      email: 'mike.johnson@email.com',
+      phone: '+237555666777',
+      age: 35,
+      gender: 'male',
+      idNumber: 'ID555666777'
+    },
+    seatNumbers: ['C20', 'C21'],
+    totalAmount: 70000,
+    status: 'in_progress',
+    bookingDate: '2024-08-09',
+    paymentMethod: 'mobile_money',
+    paymentStatus: 'paid'
+  },
+  {
+    id: 'booking-4',
+    userId: 'user-1',
+    routeId: 'route-5',
+    agencyId: 'agency-4',
+    passengerDetails: {
+      name: 'Sarah Wilson',
+      email: 'sarah.wilson@email.com',
+      phone: '+237111222333',
+      age: 26,
+      gender: 'female',
+      idNumber: 'ID111222333'
+    },
+    seatNumbers: ['D10'],
+    totalAmount: 20000,
+    status: 'cancelled',
+    bookingDate: '2024-08-06',
+    paymentMethod: 'mobile_money',
+    paymentStatus: 'refunded'
   }
 ];
 
@@ -279,7 +401,7 @@ export const mockApi = {
   },
   getBooking: (id) => Promise.resolve(mockBookings.find(b => b.id === id)),
   getAllBookings: () => Promise.resolve(mockBookings),
-  updateBookingStatus: (id, newStatus) => {
+  updateBookingStatus: (id: string, newStatus: Booking['status']) => {
     const bookingIndex = mockBookings.findIndex(b => b.id === id);
     if (bookingIndex > -1) {
       mockBookings[bookingIndex].status = newStatus;
@@ -291,6 +413,14 @@ export const mockApi = {
         timestamp: new Date().toISOString(),
       });
       return Promise.resolve(mockBookings[bookingIndex]);
+    }
+    return Promise.reject(new Error('Booking not found'));
+  },
+  deleteBooking: (id: string) => {
+    const bookingIndex = mockBookings.findIndex(b => b.id === id);
+    if (bookingIndex > -1) {
+      const deletedBooking = mockBookings.splice(bookingIndex, 1)[0];
+      return Promise.resolve(deletedBooking);
     }
     return Promise.reject(new Error('Booking not found'));
   },

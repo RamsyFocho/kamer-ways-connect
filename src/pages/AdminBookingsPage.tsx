@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { mockApi, Booking } from '@/lib/mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,9 +26,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Trash2, Eye, FileText } from 'lucide-react';
 
 const AdminBookingsPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
   const { data: bookings = [], isLoading, error } = useQuery({
     queryKey: ['bookings'],
     queryFn: mockApi.getAllBookings,
@@ -27,14 +40,59 @@ const AdminBookingsPage: React.FC = () => {
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: Booking['status'] }) =>
       mockApi.updateBookingStatus(id, status),
+    onSuccess: (updatedBooking) => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      toast({
+        title: "Status Updated",
+        description: `Booking ${updatedBooking.id} status changed to ${updatedBooking.status}`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update booking status",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const deleteBookingMutation = useMutation({
+    mutationFn: (id: string) => mockApi.deleteBooking(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      // Optionally, show a toast notification
+      toast({
+        title: "Booking Deleted",
+        description: "Booking has been successfully deleted",
+      });
     },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete booking",
+        variant: "destructive",
+      });
+    }
   });
 
   const handleChangeStatus = (bookingId: string, newStatus: Booking['status']) => {
     updateStatusMutation.mutate({ id: bookingId, status: newStatus });
+  };
+
+  const handleDeleteBooking = (bookingId: string) => {
+    deleteBookingMutation.mutate(bookingId);
+  };
+
+  const getStatusBadgeVariant = (status: Booking['status']) => {
+    switch (status) {
+      case 'confirmed': return 'default';
+      case 'pending': return 'secondary';
+      case 'cancelled': return 'destructive';
+      case 'refunded': return 'outline';
+      case 'failed': return 'destructive';
+      case 'in_progress': return 'default';
+      case 'completed': return 'default';
+      default: return 'secondary';
+    }
   };
 
   if (isLoading) {
@@ -65,84 +123,157 @@ const AdminBookingsPage: React.FC = () => {
         <div className="hidden md:block">
           <AdminSidebar />
         </div>
-        <main className="flex-1 px-4 py-8">
-          <h2 className="text-2xl font-bold mb-4">Manage Bookings</h2>
+        <main className="flex-1 px-6 py-8">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-foreground">Booking Management</h1>
+            <p className="text-muted-foreground mt-2">
+              View and manage all customer booking requests
+            </p>
+          </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>All Bookings</CardTitle>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl">All Bookings ({bookings.length})</CardTitle>
             </CardHeader>
             <CardContent>
               {bookings.length === 0 ? (
-                <p>No bookings found.</p>
+                <div className="text-center py-12">
+                  <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No bookings found.</p>
+                </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="p-2 text-left">Booking ID</th>
-                        <th className="p-2 text-left">User</th>
-                        <th className="p-2 text-left">Route</th>
-                        <th className="p-2 text-left">Amount</th>
-                        <th className="p-2 text-left">Date</th>
-                        <th className="p-2 text-left">Status</th>
-                        <th className="p-2 text-left">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                <div className="overflow-hidden rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Booking ID</TableHead>
+                        <TableHead>Passenger</TableHead>
+                        <TableHead>Contact</TableHead>
+                        <TableHead>Route Details</TableHead>
+                        <TableHead>Seats</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Payment</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {bookings.map((booking) => (
-                        <tr key={booking.id} className="border-b">
-                          <td className="p-2">{booking.id}</td>
-                          <td className="p-2">{booking.passengerDetails.name}</td>
-                          <td className="p-2">{booking.routeId}</td>{/* Ideally fetch route details */}
-                          <td className="p-2">{booking.totalAmount.toLocaleString()} FCFA</td>
-                          <td className="p-2">{booking.bookingDate}</td>
-                          <td className="p-2">
-                            <Select
-                              value={booking.status}
-                              onValueChange={(newStatus: Booking['status']) =>
-                                handleChangeStatus(booking.id, newStatus)
-                              }
-                            >
-                              <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Status" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="pending">Pending</SelectItem>
-                                <SelectItem value="confirmed">Confirmed</SelectItem>
-                                <SelectItem value="in progress">In Progress</SelectItem>
-                                <SelectItem value="completed">Completed</SelectItem>
-                                <SelectItem value="cancelled">Cancelled</SelectItem>
-                                <SelectItem value="failed">Failed</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </td>
-                          <td className="p-2">
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="sm">Delete</Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the
-                                    booking and remove its data from our servers.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => console.log('Delete booking', booking.id)}>
-                                    Continue
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </td>
-                        </tr>
+                        <TableRow key={booking.id}>
+                          <TableCell className="font-mono text-sm">
+                            {booking.id}
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{booking.passengerDetails.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                ID: {booking.passengerDetails.idNumber}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              <div>{booking.passengerDetails.email}</div>
+                              <div className="text-muted-foreground">{booking.passengerDetails.phone}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              <div className="font-medium">Route: {booking.routeId}</div>
+                              <div className="text-muted-foreground">Agency: {booking.agencyId}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {booking.seatNumbers.map((seat) => (
+                                <Badge key={seat} variant="outline" className="text-xs">
+                                  {seat}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {booking.totalAmount.toLocaleString()} FCFA
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {new Date(booking.bookingDate).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-2">
+                              <Badge variant={getStatusBadgeVariant(booking.status)} className="text-xs">
+                                {booking.status.toUpperCase()}
+                              </Badge>
+                              <Select
+                                value={booking.status}
+                                onValueChange={(newStatus: Booking['status']) =>
+                                  handleChangeStatus(booking.id, newStatus)
+                                }
+                                disabled={updateStatusMutation.isPending}
+                              >
+                                <SelectTrigger className="w-full text-xs h-8">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">Pending</SelectItem>
+                                  <SelectItem value="confirmed">Confirmed</SelectItem>
+                                  <SelectItem value="in_progress">In Progress</SelectItem>
+                                  <SelectItem value="completed">Completed</SelectItem>
+                                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                                  <SelectItem value="refunded">Refunded</SelectItem>
+                                  <SelectItem value="failed">Failed</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              <div className="capitalize">{booking.paymentMethod.replace('_', ' ')}</div>
+                              <Badge 
+                                variant={booking.paymentStatus === 'paid' ? 'default' : 'destructive'} 
+                                className="text-xs mt-1"
+                              >
+                                {booking.paymentStatus}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="destructive" size="sm" className="h-8 w-8 p-0">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Booking</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete booking {booking.id}? 
+                                      This action cannot be undone and will permanently remove 
+                                      all booking data.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={() => handleDeleteBooking(booking.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Delete Booking
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </CardContent>

@@ -153,9 +153,7 @@ const AdminAgenciesPage: React.FC = () => {
                     setNewAgency({ ...newAgency, description: e.target.value })
                   }
                 />
-                <Button type="submit" disabled={createMutation.isLoading}>
-                  Add
-                </Button>
+                <Button type="submit" disabled={createMutation.isLoading}>Add</Button>
               </form>
             </CardContent>
           </Card>
@@ -233,20 +231,8 @@ const AdminAgenciesPage: React.FC = () => {
                           <td className="p-2 space-x-2">
                             {editingId === agency.id ? (
                               <>
-                                <Button
-                                  size="sm"
-                                  onClick={handleUpdate}
-                                  disabled={updateMutation.isLoading}
-                                >
-                                  Save
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => setEditingId(null)}
-                                >
-                                  Cancel
-                                </Button>
+                                <Button size="sm" onClick={handleUpdate} disabled={updateMutation.isLoading}>Save</Button>
+                                <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>Cancel</Button>
                               </>
                             ) : (
                               <>
