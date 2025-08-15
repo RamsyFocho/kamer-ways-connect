@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Header } from '@/components/layout/Header';
 import AdminSidebar from '@/components/layout/AdminSidebar';
@@ -9,6 +8,7 @@ import CustomBarChart from '@/components/ui/CustomBarChart';
 import CustomPieChart from '@/components/ui/CustomPieChart';
 import { Button } from '@/components/ui/button';
 
+const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const stats = [
     { title: 'Total Bookings', value: '15,420', icon: TrendingUp },
@@ -66,7 +66,7 @@ import { Button } from '@/components/ui/button';
       <div className="flex relative">
         {/* Sidebar: desktop and mobile drawer */}
         <AdminSidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <main className="flex-1 px-2 sm:px-4 py-8 md:ml-64 transition-all duration-300">
+        <main className="flex-1 px-2 sm:px-4 py-8  transition-all duration-300 ">
           <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
             {stats.map((stat) => (
@@ -131,3 +131,6 @@ import { Button } from '@/components/ui/button';
       </div>
     </div>
   );
+};
+
+export default AdminDashboard;
