@@ -4,11 +4,16 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mockRoutes, Route } from '@/lib/mock-data';
+import { mockRoutes, Route, mockAgencies } from '@/lib/mock-data';
+import { AgencySelector } from '@/components/ui/AgencySelector';
 
 // Simulate API with local state for now
 const fetchRoutes = async () => {
   return Promise.resolve(mockRoutes);
+};
+
+const fetchAgencies = async () => {
+  return Promise.resolve(mockAgencies);
 };
 
 const AdminRoutesPage: React.FC = () => {
@@ -21,6 +26,7 @@ const AdminRoutesPage: React.FC = () => {
   const [editData, setEditData] = useState<Partial<Route>>({});
 
   const { data: routes = [], isLoading } = useQuery({ queryKey: ['routes'], queryFn: fetchRoutes });
+  const { data: agencies = [] } = useQuery({ queryKey: ['agencies'], queryFn: fetchAgencies });
 
   // Mutations
   const createMutation = useMutation({
@@ -82,7 +88,7 @@ const AdminRoutesPage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <form className="grid grid-cols-1 md:grid-cols-3 gap-4" onSubmit={handleCreate}>
-                <Input placeholder="Agency ID" value={newRoute.agencyId} onChange={e => setNewRoute({ ...newRoute, agencyId: e.target.value })} required />
+                <AgencySelector onSelect={(agencyId) => setNewRoute({ ...newRoute, agencyId })} />
                 <Input placeholder="From" value={newRoute.from} onChange={e => setNewRoute({ ...newRoute, from: e.target.value })} required />
                 <Input placeholder="To" value={newRoute.to} onChange={e => setNewRoute({ ...newRoute, to: e.target.value })} required />
                 <Input placeholder="Price" type="number" value={newRoute.price} onChange={e => setNewRoute({ ...newRoute, price: Number(e.target.value) })} required />
@@ -119,7 +125,7 @@ const AdminRoutesPage: React.FC = () => {
                           <td className="p-2">{editingId === route.id ? <Input value={editData.from} onChange={e => setEditData({...editData, from: e.target.value})} /> : route.from}</td>
                           <td className="p-2">{editingId === route.id ? <Input value={editData.to} onChange={e => setEditData({...editData, to: e.target.value})} /> : route.to}</td>
                           <td className="p-2">{editingId === route.id ? <Input type="number" value={editData.price} onChange={e => setEditData({...editData, price: Number(e.target.value)})} /> : route.price}</td>
-                          <td className="p-2">{route.agencyId}</td>
+                          <td className="p-2">{editingId === route.id ? <AgencySelector onSelect={(agencyId) => setEditData({ ...editData, agencyId })} /> : agencies.find(a => a.id === route.agencyId)?.name}</td>
                           <td className="p-2 space-x-2">
                             {editingId === route.id ? (
                               <>
