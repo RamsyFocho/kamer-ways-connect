@@ -84,7 +84,7 @@ const AdminAgenciesPage: React.FC = () => {
       if (!res.ok) {
         const errorData = await res.json();
         toast.error(errorData.message || "Failed to create Agency");
-        throw new Error(errorData.message || "Failed to create agency");
+        console.error(errorData.message || "Failed to create Agency");
       }
       const createdAgency = await res.json();
       toast.success("Agency created successfully");

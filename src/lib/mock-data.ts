@@ -27,10 +27,11 @@ export interface Agency {
 }
 
 export interface Route {
+  travelAgency: any;
   id: string;
   agencyId: string;
-  from: string;
-  to: string;
+  origin: string;
+  destination: string;
   departureTime: string;
   arrivalTime: string;
   duration: string;
