@@ -43,12 +43,14 @@ const AdminAgenciesPage: React.FC = () => {
     name: "",
     logo: "",
     description: "",
+    contactInfo: "",
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState({
     name: "",
     logo: "",
     description: "",
+    contactInfo: "",
   });
 
   const { data: agenciesRaw, isLoading } = useQuery({
@@ -190,6 +192,13 @@ const AdminAgenciesPage: React.FC = () => {
                     setNewAgency({ ...newAgency, description: e.target.value })
                   }
                 />
+                <Input
+                  placeholder="contact info"
+                  value={newAgency.contactInfo}
+                  onChange={(e) =>
+                    setNewAgency({ ...newAgency, contactInfo: e.target.value })
+                  }
+                />
                 <Button type="submit" disabled={createMutation.isLoading}>Add</Button>
               </form>
             </CardContent>
@@ -208,6 +217,7 @@ const AdminAgenciesPage: React.FC = () => {
                     <thead>
                       <tr className="border-b">
                         <th className="p-2 text-left">Name</th>
+                        <th className="p-2 text-left">Contact Info</th>
                         <th className="p-2 text-left">Logo</th>
                         <th className="p-2 text-left">Description</th>
                         <th className="p-2 text-left">Actions</th>
@@ -229,6 +239,21 @@ const AdminAgenciesPage: React.FC = () => {
                               />
                             ) : (
                               agency.name
+                            )}
+                          </td>
+                          <td className="p-2 font-medium">
+                            {editingId === agency.id ? (
+                              <Input
+                                value={editData.contactInfo}
+                                onChange={(e) =>
+                                  setEditData({
+                                    ...editData,
+                                    name: e.target.value,
+                                  })
+                                }
+                              />
+                            ) : (
+                              agency.contactInfo
                             )}
                           </td>
                           <td className="p-2">

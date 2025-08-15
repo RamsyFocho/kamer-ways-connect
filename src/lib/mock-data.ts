@@ -16,6 +16,7 @@ export interface Agency {
   id: string;
   name: string;
   logo: string;
+  contactInfo: string;
   rating: number;
   reviewCount: number;
   established: number;
