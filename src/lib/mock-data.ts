@@ -365,20 +365,58 @@ export const mockNotifications = [
   },
 ];
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 // API Mock Functions
 export const mockApi = {
   // Agencies
-  getAgencies: () => Promise.resolve(mockAgencies),
-  getAgency: (id) => Promise.resolve(mockAgencies.find(a => a.id === id)),
+  getAgencies: async () => {
+    try {
+      const response = await fetch(`${backendUrl}/api/agencies`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const agencies = await response.json();
+      console.log(agencies);
+      return agencies;
+    } catch (error) {
+      console.error("Failed to fetch agencies:", error);
+      return []; // Return an empty array on error
+    }
+  },
+  getAgency: async (id) => {
+    try {
+      const response = await fetch(`${backendUrl}/api/agency/${id}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Failed to fetch agency with id ${id}:`, error);
+      return null; // Return null on error
+    }
+  },
   
   // Routes
-  getRoutes: (params) => {
-    let routes = mockRoutes;
-    if (params?.from) routes = routes.filter(r => r.from.toLowerCase().includes(params.from.toLowerCase()));
-    if (params?.to) routes = routes.filter(r => r.to.toLowerCase().includes(params.to.toLowerCase()));
-    if (params?.date) routes = routes.filter(r => r.date === params.date);
-    if (params?.agencyId) routes = routes.filter(r => r.agencyId === params.agencyId);
-    return Promise.resolve(routes);
+  getRoutes: async (params) => {
+    try {
+      const response = await fetch(`${backendUrl}/api/viewAllTrips`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      let routes = await response.json();
+      console.log("Trip");
+      console.log(routes);
+      if (params?.origin) routes = routes.filter(r => r.from.toLowerCase().includes(params.origin.toLowerCase()));                                 
+      if (params?.destination) routes = routes.filter(r => r.to.toLowerCase().includes(params.destination.toLowerCase()));
+      if (params?.date) routes = routes.filter(r => r.date === params.date);
+      if (params?.agencyId) routes = routes.filter(r => r.travelAgency.id == params.agencyId);
+      console.log("Sorted routes= ", routes);
+      return Promise.resolve(routes);
+    } catch (error) {
+      console.error("Failed to fetch routes:", error);
+      return []; // Return an empty array on error
+    }
   },
   getRoute: (id) => Promise.resolve(mockRoutes.find(r => r.id === id)),
   

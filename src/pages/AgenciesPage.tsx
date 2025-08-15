@@ -15,12 +15,17 @@ export default function AgenciesPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    mockApi.getAgencies().then(setAgencies);
+    mockApi.getAgencies().then(data => {
+      setAgencies(data);
+      console.log("Agency in the Agencies Page");
+      console.log(data);
+    });
   }, []);
 
   const filteredAgencies = agencies.filter(agency =>
     agency.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+   
 
   return (
     <div className="min-h-screen bg-background">
@@ -55,15 +60,15 @@ export default function AgenciesPage() {
                     <CardTitle>{agency.name}</CardTitle>
                     <div className="flex items-center space-x-1">
                       <Star className="h-4 w-4 fill-warning text-warning" />
-                      <span>{agency.rating}</span>
+                      <span>{agency.rating || 4.8}</span>
                     </div>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground mb-4">{agency.description}</p>
+                <p className="text-muted-foreground mb-4">{agency.description || "Premium bus services connecting major cities across Cameroon with luxury and comfort."}</p>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {agency.features.slice(0, 3).map(feature => (
+                  {(agency.features || ['WiFi', 'AC', 'Meals', 'Charging Ports', 'Rest Stops']).slice(0, 3).map(feature => (
                     <Badge key={feature} variant="secondary">{feature}</Badge>
                   ))}
                 </div>

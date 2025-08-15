@@ -133,7 +133,7 @@ const Index = () => {
               <div className="text-lg">{t('common.loading')}</div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ">
               {filteredAgencies.map((agency, index) => (
                 <motion.div
                   key={agency.id}
@@ -151,7 +151,7 @@ const Index = () => {
                           <CardTitle className="text-lg">{agency.name}</CardTitle>
                           <div className="flex items-center space-x-1">
                             <Star className="h-4 w-4 fill-warning text-warning" />
-                            <span className="text-sm font-medium">{agency.rating}</span>
+                            <span className="text-sm font-medium">{agency.rating || 4.8}</span>
                             <span className="text-sm text-muted-foreground">
                               ({agency.reviewCount} {t('agencies.reviews')})
                             </span>
@@ -161,22 +161,22 @@ const Index = () => {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <CardDescription className="line-clamp-2">
-                        {agency.description}
+                        {agency.description || "Premium bus services connecting major cities across Cameroon with luxury and comfort."}
                       </CardDescription>
                       
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">{t('agencies.established')}:</span>
-                          <span className="font-medium">{agency.established}</span>
+                          <span className="font-medium">{agency.established || 2010}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">{t('agencies.fleetSize')}:</span>
-                          <span className="font-medium">{agency.fleetSize} {t('agencies.buses')}</span>
+                          <span className="font-medium">{agency.fleetSize || 26} {t('agencies.buses')}</span>
                         </div>
                       </div>
 
                       <div className="flex flex-wrap gap-1">
-                        {agency.features.slice(0, 3).map((feature) => (
+                        {(agency.features || ['WiFi', 'AC', 'Meals', 'Charging Ports', 'Rest Stops']).slice(0, 3).map((feature) => (
                           <Badge key={feature} variant="secondary" className="text-xs">
                             {feature}
                           </Badge>

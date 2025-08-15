@@ -21,18 +21,19 @@ export default function AgencyDetailPage() {
   }, [id]);
 
   if (!agency) return <div>Loading...</div>;
+  console.log(agency);
 
   return (
     <div className="min-h-screen bg-background">
       <SEO 
         title={`${agency.name} - Bus Routes & Booking`}
         description={`Find and book bus tickets for routes operated by ${agency.name}. View schedules, prices, and available seats for travel across Cameroon.`}
-        keywords={[agency.name, "bus routes", "book tickets", ...routes.map(r => `${r.from} to ${r.to}`)]}
+        keywords={[agency.name, "bus routes", "book tickets", ...routes.map(r => `${r.origin} to ${r.destination}`)]}
       />
       <Header />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-4">{agency.name}</h1>
-        <p className="text-muted-foreground mb-8">{agency.description}</p>
+        <p className="text-muted-foreground mb-8">{agency.description || "Luxury bus services with premium amenities for discerning travelers."}</p>
 
         <h2 className="text-2xl font-bold mb-6">Available Routes</h2>
         <div className="grid gap-4">
@@ -43,7 +44,7 @@ export default function AgencyDetailPage() {
                   <div className="space-y-2">
                     <div className="flex items-center space-x-4">
                       <MapPin className="h-5 w-5 text-muted-foreground" />
-                      <span className="font-medium">{route.from} → {route.to}</span>
+                      <span className="font-medium">{route.origin} → {route.destination}</span>
                     </div>
                     <div className="flex items-center space-x-4">
                       <Clock className="h-5 w-5 text-muted-foreground" />
@@ -51,7 +52,7 @@ export default function AgencyDetailPage() {
                     </div>
                     <div className="flex items-center space-x-4">
                       <Users className="h-5 w-5 text-muted-foreground" />
-                      <span>{route.availableSeats} seats available</span>
+                      <span>{route.availableSeats || 45} seats available</span>
                     </div>
                   </div>
                   <div className="text-right">
