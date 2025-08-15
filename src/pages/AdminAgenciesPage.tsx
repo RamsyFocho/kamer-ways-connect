@@ -6,12 +6,36 @@ import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { mockAgencies, Agency } from "@/lib/mock-data";
 import { toast } from "sonner"; // or your preferred toast library
-
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 // Simulate API with local state for now
 const fetchAgencies = async () => {
-  return Promise.resolve(mockAgencies);
+  // return Promise.resolve(mockAgencies);
+  try {
+    // Make the GET request to your local API endpoint.
+    const response = await fetch(`${backendUrl}/api/agencies`);
+
+    // Check if the response was successful (e.g., status code 200).
+    // If not, it throws an error to be caught by the catch block.
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    // Parse the JSON data from the response body.
+    const data = await response.json();
+    console.log("Agencies: ------");
+    console.log(data);
+    // Return the fetched data.
+    return data;
+
+  } catch (error) {
+    // Log any errors that occur during the fetch operation.
+    console.error("Failed to fetch agencies:", error);
+    
+    // Return an empty array or null as a fallback in case of an error.
+    return []; 
+  }
 };
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 
 const AdminAgenciesPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -27,10 +51,12 @@ const AdminAgenciesPage: React.FC = () => {
     description: "",
   });
 
-  const { data: agencies = [], isLoading } = useQuery({
+  const { data: agenciesRaw, isLoading } = useQuery({
     queryKey: ["agencies"],
     queryFn: fetchAgencies,
   });
+  // Always use an array for mapping
+  const agencies: Agency[] = Array.isArray(agenciesRaw) ? agenciesRaw : [];
 
   // Mutations (simulate with local cache)
   const createMutation = useMutation({
@@ -59,16 +85,27 @@ const AdminAgenciesPage: React.FC = () => {
         throw new Error(errorData.message || "Failed to create agency");
       }
       const createdAgency = await res.json();
+      toast.success("Agency created successfully");
       console.log(createdAgency);
       return createdAgency;
     }
     catch (err){
       toast.error("An error occured: "+ err);
-        console.error("Error: "+err);
+      console.error("Error: "+err);
     }
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(["agencies"], data);
+      // If backend returns a single agency, merge it into the array
+      let newData;
+      if (Array.isArray(data)) {
+        newData = data;
+      } else if (data && typeof data === 'object' && data.id) {
+        // Add to existing list
+        newData = [...agencies, data];
+      } else {
+        newData = agencies;
+      }
+      queryClient.setQueryData(["agencies"], newData);
       toast.success("Agency created successfully");
     }
   });
@@ -225,7 +262,7 @@ const AdminAgenciesPage: React.FC = () => {
                                 }
                               />
                             ) : (
-                              agency.description
+                              agency.description || NaN
                             )}
                           </td>
                           <td className="p-2 space-x-2">
