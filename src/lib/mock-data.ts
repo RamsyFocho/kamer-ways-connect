@@ -460,7 +460,6 @@ export const mockApi = {
       body: booking,
     });
     if (!response.ok) {
-      toast.error("Failed to create booking");
       throw new Error("Failed to create booking");
     }
     const newBooking = await response.json();
