@@ -5,7 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from './ui/skeleton';
-
+import mtnLogo from '../assets/payments/mtn.png';
+import orangeLogo from '../assets/payments/orangeMoney.png';
+import MobileMoney from '../assets/payments/mobileMoney.png';
 interface PaymentOptionsProps {
   selectedPaymentMethod: string;
   setSelectedPaymentMethod: (method: string) => void;
@@ -61,7 +63,7 @@ export function PaymentOptions({
             >
               <RadioGroupItem value="mobile_money" id="mobile-money" className="sr-only" />
               <div className="flex items-center space-x-2">
-                <img src="/placeholder.svg" alt="Mobile Money" className="h-8 w-8" /> {/* Replace with actual icons */}
+                <img src={MobileMoney} alt="Mobile Money" className="h-8 w-[4rem]" /> {/* Replace with actual icons */}
                 <span>Mobile Money</span>
               </div>
             </Label>
@@ -92,7 +94,7 @@ export function PaymentOptions({
                 >
                   <RadioGroupItem value="mtn" id="mtn" className="sr-only" />
                   <div className="flex items-center space-x-2">
-                    <img src="/placeholder.svg" alt="MTN" className="h-8 w-8" /> {/* Replace with actual MTN logo */}
+                    <img src={mtnLogo} alt="MTN" className="h-8 w-8" /> {/* Replace with actual MTN logo */}
                     <span>MTN Mobile Money</span>
                   </div>
                 </Label>
@@ -102,7 +104,7 @@ export function PaymentOptions({
                 >
                   <RadioGroupItem value="orange" id="orange" className="sr-only" />
                   <div className="flex items-center space-x-2">
-                    <img src="/placeholder.svg" alt="Orange" className="h-8 w-8" /> {/* Replace with actual Orange logo */}
+                    <img src={orangeLogo} alt="Orange" className="h-8 w-8" /> {/* Replace with actual Orange logo */}
                     <span>Orange Money</span>
                   </div>
                 </Label>
