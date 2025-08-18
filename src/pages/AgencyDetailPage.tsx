@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate} from 'react-router-dom';
 import { Clock, MapPin, Users } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -12,7 +12,7 @@ export default function AgencyDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [agency, setAgency] = useState<Agency | null>(null);
   const [routes, setRoutes] = useState<Route[]>([]);
-
+  const navigate = useNavigate();
   useEffect(() => {
     if (id) {
       mockApi.getAgency(id).then(setAgency);
@@ -23,6 +23,16 @@ export default function AgencyDetailPage() {
   if (!agency) return <div>Loading...</div>;
   console.log(agency);
 
+  const handleRedirectBooking = (routeId)=>{
+    try{
+      const selectedRoute = routes.filter((r) => r.id === routeId);
+      console.log("selected route ", selectedRoute);
+      localStorage.setItem("selectedRoute",JSON.stringify(selectedRoute));
+      navigate(`/booking/${routeId}`);
+    }catch(err){
+      console.error("Error: ", err);
+    }
+  }
   return (
     <div className="min-h-screen bg-background">
       <SEO 
@@ -57,8 +67,8 @@ export default function AgencyDetailPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-primary">{route.price.toLocaleString()} FCFA</div>
-                    <Button asChild>
-                      <Link to={`/booking/${route.id}`}>Book Now</Link>
+                    <Button onClick={()=> handleRedirectBooking(route.id)}>
+                      Book Now
                     </Button>
                   </div>
                 </div>

@@ -6,11 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import SEO from "@/components/Seo";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { mockApi, Route } from "@/lib/mock-data";
-import { CheckCircle, XCircle, Bus, MapPin, Clock, Users } from "lucide-react";
+import { 
+  CheckCircle, 
+  XCircle, 
+  Bus, 
+  MapPin, 
+  Clock, 
+  Users, 
+  Check,
+  ArrowRight,
+  Calendar,
+  CreditCard,
+  User,
+  Armchair
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -201,239 +216,493 @@ export default function BookingPage() {
     );
   }
 
+  // Step indicator component
+  const StepIndicator = () => {
+    const steps = [
+      { number: 1, title: "Passenger Info", icon: User, description: "Enter your details" },
+      { number: 2, title: "Route Details", icon: Bus, description: "Confirm your journey" },
+      { number: 3, title: "Select Seats", icon: Armchair, description: "Choose your seats" },
+      { number: 4, title: "Payment", icon: CreditCard, description: "Complete payment" },
+      { number: 5, title: "Confirmation", icon: CheckCircle, description: "Booking complete" }
+    ];
+
+    return (
+      <div className="mb-8">
+        <div className="flex items-center justify-between relative">
+          {/* Progress line */}
+          <div className="absolute top-6 left-0 right-0 h-0.5 bg-muted -z-10">
+            <div 
+              className="h-full bg-primary transition-all duration-500 ease-in-out"
+              style={{ width: `${((step - 1) / (steps.length - 1)) * 100}%` }}
+            />
+          </div>
+          
+          {steps.map((stepItem, index) => {
+            const isCompleted = step > stepItem.number;
+            const isCurrent = step === stepItem.number;
+            const isUpcoming = step < stepItem.number;
+            
+            return (
+              <div key={stepItem.number} className="flex flex-col items-center relative">
+                <div className={`
+                  w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300
+                  ${isCompleted ? 'bg-primary border-primary text-primary-foreground' : ''}
+                  ${isCurrent ? 'bg-primary border-primary text-primary-foreground shadow-lg scale-110' : ''}
+                  ${isUpcoming ? 'bg-background border-muted-foreground/30 text-muted-foreground' : ''}
+                `}>
+                  {isCompleted ? (
+                    <Check className="w-5 h-5" />
+                  ) : (
+                    <stepItem.icon className="w-5 h-5" />
+                  )}
+                </div>
+                <div className="mt-2 text-center hidden sm:block">
+                  <div className={`text-sm font-medium ${isCurrent ? 'text-primary' : 'text-muted-foreground'}`}>
+                    {stepItem.title}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {stepItem.description}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // Booking summary component
+  const BookingSummary = () => {
+    const totalAmount = route ? route.price * bookingData.selectedSeats.length : 0;
+    
+    return (
+      <Card className="sticky top-4">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bus className="w-5 h-5" />
+            Booking Summary
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Route Information */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm">Route</span>
+              </div>
+              <div className="text-right">
+                <div className="font-medium text-sm">{route?.origin}</div>
+                <ArrowRight className="w-3 h-3 mx-auto text-muted-foreground" />
+                <div className="font-medium text-sm">{route?.destination}</div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm">Date</span>
+              </div>
+              <span className="text-sm font-medium">{route?.date || 'Today'}</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm">Departure</span>
+              </div>
+              <span className="text-sm font-medium">{route?.departureTime}</span>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Passenger Information */}
+          {bookingData.name && (
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm">Passenger Details</h4>
+              <div className="text-sm space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Name:</span>
+                  <span>{bookingData.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Email:</span>
+                  <span className="truncate ml-2">{bookingData.email}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Phone:</span>
+                  <span>{bookingData.phone}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Seat Selection */}
+          {bookingData.selectedSeats.length > 0 && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">Seat Selection</h4>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">
+                    {bookingData.selectedSeats.length} seat{bookingData.selectedSeats.length > 1 ? 's' : ''}
+                  </span>
+                  <Badge variant="secondary">
+                    {bookingData.selectedSeats.join(', ')}
+                  </Badge>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Payment Method */}
+          {bookingData.paymentMethod && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">Payment Method</h4>
+                <div className="text-sm">
+                  <Badge variant="outline">
+                    {bookingData.paymentMethod === 'mobile_money' ? 'Mobile Money' : 
+                     bookingData.paymentMethod === 'bank_card' ? 'Bank Card' : 
+                     bookingData.paymentMethod}
+                  </Badge>
+                  {bookingData.paymentMethod === 'mobile_money' && bookingData.mobileMoneyProvider && (
+                    <div className="mt-1 text-muted-foreground">
+                      {bookingData.mobileMoneyProvider} - {bookingData.mobileNumber}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          <Separator />
+
+          {/* Price Breakdown */}
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm">Price Breakdown</h4>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  Ticket price × {bookingData.selectedSeats.length || 1}
+                </span>
+                <span>{((route?.price || 0) * (bookingData.selectedSeats.length || 1)).toLocaleString()} FCFA</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Service fee</span>
+                <span>0 FCFA</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between font-bold text-lg">
+                <span>Total</span>
+                <span className="text-primary">{totalAmount.toLocaleString()} FCFA</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   const renderStepContent = () => {
     switch (step) {
       case 1:
         return (
-          <form onSubmit={handlePassengerSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  value={bookingData.name}
-                  onChange={(e) =>
-                    setBookingData({ ...bookingData, name: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={bookingData.email}
-                  onChange={(e) =>
-                    setBookingData({ ...bookingData, email: e.target.value })
-                  }
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  value={bookingData.phone}
-                  onChange={(e) =>
-                    setBookingData({ ...bookingData, phone: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="age">Age</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  value={bookingData.age}
-                  onChange={(e) =>
-                    setBookingData({ ...bookingData, age: e.target.value })
-                  }
-                  required
-                />
-              </div>
-            </div>
-
+          <div className="space-y-6">
             <div>
-              <Label htmlFor="gender">Gender</Label>
-              <Select
-                onValueChange={(value) =>
-                  setBookingData({
-                    ...bookingData,
-                    gender: value as "male" | "female" | "other",
-                  })
-                }
-                defaultValue={bookingData.gender}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <h2 className="text-2xl font-bold mb-2">Passenger Information</h2>
+              <p className="text-muted-foreground">Please provide your personal details for the booking.</p>
             </div>
+            
+            <form onSubmit={handlePassengerSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm font-medium">Full Name *</Label>
+                  <Input
+                    id="name"
+                    placeholder="Enter your full name"
+                    value={bookingData.name}
+                    onChange={(e) =>
+                      setBookingData({ ...bookingData, name: e.target.value })
+                    }
+                    className="h-11"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">Email Address *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={bookingData.email}
+                    onChange={(e) =>
+                      setBookingData({ ...bookingData, email: e.target.value })
+                    }
+                    className="h-11"
+                    required
+                  />
+                </div>
+              </div>
 
-            <div>
-              <Label htmlFor="idNumber">ID Number</Label>
-              <Input
-                id="idNumber"
-                value={bookingData.idNumber}
-                onChange={(e) =>
-                  setBookingData({ ...bookingData, idNumber: e.target.value })
-                }
-                required
-              />
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-sm font-medium">Phone Number *</Label>
+                  <Input
+                    id="phone"
+                    placeholder="Enter your phone number"
+                    value={bookingData.phone}
+                    onChange={(e) =>
+                      setBookingData({ ...bookingData, phone: e.target.value })
+                    }
+                    className="h-11"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="age" className="text-sm font-medium">Age *</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    placeholder="Enter your age"
+                    value={bookingData.age}
+                    onChange={(e) =>
+                      setBookingData({ ...bookingData, age: e.target.value })
+                    }
+                    className="h-11"
+                    required
+                  />
+                </div>
+              </div>
 
-            <Button type="submit" className="w-full">
-              Next: Confirm Route
-            </Button>
-          </form>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="gender" className="text-sm font-medium">Gender *</Label>
+                  <Select
+                    onValueChange={(value) =>
+                      setBookingData({
+                        ...bookingData,
+                        gender: value as "male" | "female" | "other",
+                      })
+                    }
+                    defaultValue={bookingData.gender}
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Select your gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="idNumber" className="text-sm font-medium">ID Number *</Label>
+                  <Input
+                    id="idNumber"
+                    placeholder="Enter your ID number"
+                    value={bookingData.idNumber}
+                    onChange={(e) =>
+                      setBookingData({ ...bookingData, idNumber: e.target.value })
+                    }
+                    className="h-11"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-6">
+                <Button type="submit" size="lg" className="px-8">
+                  Continue to Route Details
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </form>
+          </div>
         );
       case 2:
         return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Confirm Route Details</h3>
-            <Card>
-              <CardContent className="p-4 space-y-2">
-                <div className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    From: <span className="font-medium">{route.origin}</span> to{" "}
-                    <span className="font-medium">{route.destination}</span>
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    Departure:{" "}
-                    <span className="font-medium">{route.departureTime}</span>,
-                    Arrival:{" "}
-                    <span className="font-medium">{route.arrivalTime}</span>
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Bus className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    Bus Type:{" "}
-                    <span className="font-medium">
-                      {route.busType || "Classic"}
-                    </span>
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    Available Seats:{" "}
-                    <span className="font-medium">
-                      {route.availableSeats || 45}
-                    </span>
-                  </span>
-                </div>
-                <div className="text-2xl font-bold text-primary mt-4">
-                  Price: {route.price} FCFA
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Confirm Route Details</h2>
+              <p className="text-muted-foreground">Please review your selected journey details.</p>
+            </div>
+            
+            <Card className="border-2">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <MapPin className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <div className="font-semibold">{route.origin}</div>
+                        <div className="text-sm text-muted-foreground">Departure</div>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-6 h-6 text-muted-foreground" />
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <div className="font-semibold text-right">{route.destination}</div>
+                        <div className="text-sm text-muted-foreground text-right">Arrival</div>
+                      </div>
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <MapPin className="w-5 h-5 text-primary" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center">
+                      <Clock className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+                      <div className="text-sm text-muted-foreground">Departure</div>
+                      <div className="font-semibold">{route.departureTime}</div>
+                    </div>
+                    <div className="text-center">
+                      <Clock className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+                      <div className="text-sm text-muted-foreground">Arrival</div>
+                      <div className="font-semibold">{route.arrivalTime}</div>
+                    </div>
+                    <div className="text-center">
+                      <Bus className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+                      <div className="text-sm text-muted-foreground">Bus Type</div>
+                      <div className="font-semibold">{route.busType || "Classic"}</div>
+                    </div>
+                    <div className="text-center">
+                      <Users className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+                      <div className="text-sm text-muted-foreground">Available</div>
+                      <div className="font-semibold">{route.availableSeats || 45} seats</div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="text-center">
+                    <div className="text-sm text-muted-foreground mb-1">Price per seat</div>
+                    <div className="text-3xl font-bold text-primary">{route.price.toLocaleString()} FCFA</div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={handleBack}>
-                Back
+            
+            <div className="flex justify-between pt-6">
+              <Button variant="outline" onClick={handleBack} size="lg" className="px-8">
+                Back to Passenger Info
               </Button>
-              <Button onClick={handleNext}>Next: Select Seats</Button>
+              <Button onClick={handleNext} size="lg" className="px-8">
+                Continue to Seat Selection
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
             </div>
           </div>
         );
       case 3: {
-        const maxSeats = route.availableSeats == null? 45: route.availableSeats ;
-        const seatOptions = Array.from({ length: maxSeats }, (_, i) => i + 1);
+        const maxSeats = route.availableSeats == null ? 45 : route.availableSeats;
+        const seatOptions = Array.from({ length: Math.min(maxSeats, 10) }, (_, i) => i + 1);
 
         return (
-          <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-            <div className="space-y-6">
-              <div className="text-center">
-                <h3 className="text-2xl font-semibold text-gray-800">
-                  Select Your Seats
-                </h3>
-                <p className="text-gray-500 mt-1">
-                  Choose how many seats you'd like to book
-                </p>
-              </div>
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Select Your Seats</h2>
+              <p className="text-muted-foreground">Choose the number of seats you'd like to book for your journey.</p>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="numSeats" className="text-gray-700 font-medium">
-                  Number of Seats
-                </Label>
-                <Select
-                  value={
-                    bookingData.selectedSeats.length
-                      ? String(bookingData.selectedSeats.length)
-                      : ""
-                  }
-                  onValueChange={(val) => {
-                    const num = Number(val);
-                    setBookingData((prev) => ({
-                      ...prev,
-                      selectedSeats: Array.from(
-                        { length: num },
-                        (_, i) => `S${i + 1}`
-                      ),
-                    }));
-                  }}
-                >
-                  <SelectTrigger id="numSeats" className="h-12">
-                    <SelectValue
-                      placeholder="Select..."
-                      className="placeholder:text-gray-400"
-                    />
-                  </SelectTrigger>
-                  <SelectContent className="border border-gray-200 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-                    {seatOptions.map((num) => (
-                      <SelectItem
-                        key={num}
-                        value={String(num)}
-                        className="hover:bg-gray-50 focus:bg-gray-50 hover:dark:bg-gray-800 focus:dark:bg-gray-800"
+            <Card className="border-2">
+              <CardContent className="p-6">
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Armchair className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">How many seats do you need?</h3>
+                    <p className="text-muted-foreground">Select the number of passengers traveling</p>
+                  </div>
+
+                  <div className="max-w-sm mx-auto space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="numSeats" className="text-sm font-medium">Number of Seats</Label>
+                      <Select
+                        value={
+                          bookingData.selectedSeats.length
+                            ? String(bookingData.selectedSeats.length)
+                            : ""
+                        }
+                        onValueChange={(val) => {
+                          const num = Number(val);
+                          setBookingData((prev) => ({
+                            ...prev,
+                            selectedSeats: Array.from(
+                              { length: num },
+                              (_, i) => `S${i + 1}`
+                            ),
+                          }));
+                        }}
                       >
-                        {num} seat{num > 1 ? "s" : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-gray-500">
-                  Maximum {maxSeats} seat{maxSeats > 1 ? "s" : ""} available
-                </p>
-              </div>
+                        <SelectTrigger id="numSeats" className="h-12 text-center">
+                          <SelectValue placeholder="Select number of seats..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {seatOptions.map((num) => (
+                            <SelectItem key={num} value={String(num)}>
+                              <div className="flex items-center gap-2">
+                                <Armchair className="w-4 h-4" />
+                                {num} seat{num > 1 ? "s" : ""} - {(route.price * num).toLocaleString()} FCFA
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {bookingData.selectedSeats.length > 0 && (
+                      <div className="text-center p-4 bg-primary/5 rounded-lg">
+                        <div className="text-sm text-muted-foreground mb-1">Total for {bookingData.selectedSeats.length} seat{bookingData.selectedSeats.length > 1 ? 's' : ''}</div>
+                        <div className="text-2xl font-bold text-primary">
+                          {(route.price * bookingData.selectedSeats.length).toLocaleString()} FCFA
+                        </div>
+                      </div>
+                    )}
+                    
+                    <p className="text-xs text-muted-foreground text-center">
+                      Maximum {Math.min(maxSeats, 10)} seat{Math.min(maxSeats, 10) > 1 ? "s" : ""} can be booked at once
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              <div className="flex justify-between pt-4 border-t border-gray-100">
-                <Button
-                  variant="outline"
-                  onClick={handleBack}
-                  className="px-6 py-3 border-gray-300 hover:bg-gray-50"
-                >
-                  Back
-                </Button>
-                <Button
-                  onClick={handleNext}
-                  disabled={bookingData.selectedSeats.length === 0}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                >
-                  Next: Payment
-                </Button>
-              </div>
+            <div className="flex justify-between pt-6">
+              <Button variant="outline" onClick={handleBack} size="lg" className="px-8">
+                Back to Route Details
+              </Button>
+              <Button
+                onClick={handleNext}
+                disabled={bookingData.selectedSeats.length === 0}
+                size="lg"
+                className="px-8"
+              >
+                Continue to Payment
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
             </div>
           </div>
         );
       }
       case 4:
         return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Payment Information</h3>
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Payment Information</h2>
+              <p className="text-muted-foreground">Choose your preferred payment method to complete the booking.</p>
+            </div>
+            
             <PaymentOptions
               selectedPaymentMethod={bookingData.paymentMethod}
               setSelectedPaymentMethod={(method) =>
@@ -452,54 +721,95 @@ export default function BookingPage() {
               }
               totalAmount={route.price * bookingData.selectedSeats.length}
             />
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={handleBack}>
-                Back
+            
+            <div className="flex justify-between pt-6">
+              <Button variant="outline" onClick={handleBack} size="lg" className="px-8">
+                Back to Seat Selection
               </Button>
               <Button
                 onClick={handleConfirmBooking}
                 disabled={createBookingMutation.isPending}
+                size="lg"
+                className="px-8"
               >
-                {createBookingMutation.isPending
-                  ? "Confirming..."
-                  : "Confirm Booking"}
+                {createBookingMutation.isPending ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Complete Booking
+                    <Check className="w-4 h-4 ml-2" />
+                  </>
+                )}
               </Button>
             </div>
           </div>
         );
       case 5:
         return (
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-6 py-8">
             {createBookingMutation.isSuccess && (
               <>
-                <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
-                <h3 className="text-2xl font-bold">Booking Successful!</h3>
-                <p className="text-muted-foreground">
-                  Your booking has been confirmed. A confirmation email will be
-                  sent shortly.
-                </p>
-                <p className="text-lg font-semibold">
-                  Total Paid:{" "}
-                  {(
-                    route.price * bookingData.selectedSeats.length
-                  ).toLocaleString()}{" "}
-                  FCFA
-                </p>
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle className="h-10 w-10 text-green-600" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-green-600 mb-2">Booking Confirmed!</h2>
+                  <p className="text-muted-foreground text-lg">
+                    Your bus ticket has been successfully booked. A confirmation email has been sent to your inbox.
+                  </p>
+                </div>
+                
+                <Card className="max-w-md mx-auto">
+                  <CardContent className="p-6">
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Booking ID:</span>
+                        <span className="font-mono font-semibold">#BK{Date.now().toString().slice(-6)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Passenger:</span>
+                        <span className="font-semibold">{bookingData.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Seats:</span>
+                        <span className="font-semibold">{bookingData.selectedSeats.length}</span>
+                      </div>
+                      <Separator />
+                      <div className="flex justify-between text-lg">
+                        <span className="font-semibold">Total Paid:</span>
+                        <span className="font-bold text-primary">
+                          {(route.price * bookingData.selectedSeats.length).toLocaleString()} FCFA
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </>
             )}
             {createBookingMutation.isError && (
               <>
-                <XCircle className="h-16 w-16 text-destructive mx-auto" />
-                <h3 className="text-2xl font-bold">Booking Failed!</h3>
-                <p className="text-muted-foreground">
-                  {createBookingMutation.error?.message ||
-                    "An unexpected error occurred."}
-                </p>
+                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+                  <XCircle className="h-10 w-10 text-red-600" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-red-600 mb-2">Booking Failed</h2>
+                  <p className="text-muted-foreground text-lg">
+                    {createBookingMutation.error?.message || "An unexpected error occurred while processing your booking."}
+                  </p>
+                </div>
               </>
             )}
-            <Button asChild className="mt-4">
-              <Link to="/">Go to Home</Link>
-            </Button>
+            <div className="flex gap-4 justify-center">
+              <Button asChild variant="outline" size="lg">
+                <Link to="/bookings">View My Bookings</Link>
+              </Button>
+              <Button asChild size="lg">
+                <Link to="/">Book Another Trip</Link>
+              </Button>
+            </div>
           </div>
         );
       default:
@@ -508,7 +818,7 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-muted/30">
       <SEO
         title="Complete Your Booking"
         description="Enter your details to complete your bus ticket booking. Secure your seat for travel across Cameroon with KamerWays Connect."
@@ -520,27 +830,39 @@ export default function BookingPage() {
         ]}
       />
       <Header />
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <h1 className="text-3xl font-bold mb-8">Book Your Journey</h1>
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Page Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold mb-2">Complete Your Booking</h1>
+            <p className="text-muted-foreground text-lg">
+              Follow the steps below to secure your bus ticket
+            </p>
+          </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              Step {step}:{" "}
-              {step === 1
-                ? "Passenger Information"
-                : step === 2
-                ? "Confirm Route"
-                : step === 3
-                ? "Select Seats"
-                : step === 4
-                ? "Payment"
-                : "Confirmation"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>{renderStepContent()}</CardContent>
-        </Card>
+          {/* Step Indicator */}
+          <StepIndicator />
+
+          {/* Main Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Form Content */}
+            <div className="lg:col-span-2">
+              <Card className="shadow-lg">
+                <CardContent className="p-8">
+                  {renderStepContent()}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Booking Summary Sidebar */}
+            <div className="lg:col-span-1">
+              <BookingSummary />
+            </div>
+          </div>
+        </div>
       </div>
+      
       <Footer />
     </div>
   );
