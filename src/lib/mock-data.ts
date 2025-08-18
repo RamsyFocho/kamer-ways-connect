@@ -442,20 +442,34 @@ export const mockApi = {
       return []; // Return an empty array on error
     }
   },
-    getRoute: async (id) => {
+  getRoute: async (id) => {
     console.log(routes);
-    const route = routes.find(r => r.id === id);
+    const route = routes.find((r) => r.id === id);
     return Promise.resolve(route || null);
   },
 
   // Bookings
-  createBooking: (booking) => {
-    const newBooking = { ...booking, id: `booking-${Date.now()}` };
-    mockBookings.push(newBooking);
+  createBooking: async (booking) => {
+    // const newBooking = { ...booking, id: `booking-${Date.now()}` };
+    // mockBookings.push(newBooking);
+    const response = await fetch(`${backendUrl}/api/createReservation`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application.json",
+      },
+      body: booking,
+    });
+    if (!response.ok) {
+      toast.error("Failed to create booking");
+      throw new Error("Failed to create booking");
+    }
+    const newBooking = await response.json();
     // Simulate notification for user and admin
     mockApi.addNotification({
-      userId: newBooking.userId,
-      message: `Your booking for route ${newBooking.passengerDetails.name} has been ${newBooking.status}!`,
+      userId: newBooking.userId || 1,
+      message: `Your booking for route ${newBooking.fullName} has been ${
+        newBooking.status || "pending"
+      }!`,
       read: false,
       timestamp: new Date().toISOString(),
     });
@@ -468,7 +482,16 @@ export const mockApi = {
     return Promise.resolve(newBooking);
   },
   getBooking: (id) => Promise.resolve(mockBookings.find((b) => b.id === id)),
-  getAllBookings: () => Promise.resolve(mockBookings),
+  // getAllBookings: () => Promise.resolve(mockBookings),
+  getAllBookings: async () => {
+    const response = await fetch(`${backendUrl}/api/viewReservations`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch bookings");
+    }
+    const bookings = await response.json();
+    console.log("bookings Fetched =>",bookings);
+    return bookings;
+  },
   updateBookingStatus: (id: string, newStatus: Booking["status"]) => {
     const bookingIndex = mockBookings.findIndex((b) => b.id === id);
     if (bookingIndex > -1) {

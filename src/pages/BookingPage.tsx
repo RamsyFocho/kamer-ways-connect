@@ -158,33 +158,18 @@ export default function BookingPage() {
         return;
       }
     }
-    // Add more validation for bank card if needed
+    // Add more validation for bank card if needed  
     const newBooking = {
-      userId: "user-1", // Mock user ID
-      routeId: route.id,
-      agencyId: route.agencyId,
-      passengerDetails: {
-        name: bookingData.name,
-        email: bookingData.email,
-        phone: bookingData.phone,
-        age: Number(bookingData.age),
-        gender: bookingData.gender,
-        idNumber: bookingData.idNumber,
-      },
-      seatNumbers: bookingData.selectedSeats,
-      totalAmount: route.price * bookingData.selectedSeats.length,
-      status: "pending", // Initial status
-      bookingDate: new Date().toISOString().split("T")[0],
-      paymentMethod: bookingData.paymentMethod,
-      paymentStatus: "pending", // Default mock payment status
-      mobileMoneyProvider:
-        bookingData.paymentMethod === "mobile_money"
-          ? bookingData.mobileMoneyProvider
-          : undefined,
-      mobileNumber:
-        bookingData.paymentMethod === "mobile_money"
-          ? bookingData.mobileNumber
-          : undefined,
+      agencyId: route.travelAgency.id,
+      fullName: bookingData.name,
+      email: bookingData.email,
+      idCardNumber: bookingData.idNumber,
+      startPoint : route.origin,
+      endPoint : route.destination,
+      paymentMethod:  bookingData.paymentMethod === "mobile_money" ? bookingData.mobileMoneyProvider : undefined,
+      numberOfSeats : bookingData.selectedSeats.length,
+      fleetType: "VIP", //not yet implemented
+      departurePeriod : "Night"  
     };
     console.log(newBooking);
     createBookingMutation.mutate(newBooking);
