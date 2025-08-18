@@ -393,12 +393,12 @@ export default function BookingPage() {
                       className="placeholder:text-gray-400"
                     />
                   </SelectTrigger>
-                  <SelectContent className="border border-gray-200 shadow-sm">
+                  <SelectContent className="border border-gray-200 shadow-sm dark:border-gray-800 dark:bg-gray-900">
                     {seatOptions.map((num) => (
                       <SelectItem
                         key={num}
                         value={String(num)}
-                        className="hover:bg-gray-50 focus:bg-gray-50"
+                        className="hover:bg-gray-50 focus:bg-gray-50 hover:dark:bg-gray-800 focus:dark:bg-gray-800"
                       >
                         {num} seat{num > 1 ? "s" : ""}
                       </SelectItem>
