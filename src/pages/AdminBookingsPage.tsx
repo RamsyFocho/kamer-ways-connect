@@ -215,6 +215,12 @@ const AdminBookingsPage: React.FC = () => {
                               <div className="text-muted-foreground">
                                 Agency: {booking.id}
                               </div>
+                              <div className="text-muted-foreground">
+                                Period: {booking.departurePeriod}
+                              </div>
+                              <div className="text-muted-foreground">
+                                Type: {booking.fleetType}
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell>
