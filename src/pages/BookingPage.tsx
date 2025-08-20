@@ -89,6 +89,7 @@ export default function BookingPage() {
       queryClient.invalidateQueries({ queryKey: ["bookings"] }); // Invalidate bookings cache
     },
     onError: (error) => {
+      console.error("Error: ",error.message);
       toast({
         title: "Booking Failed",
         description: error.message || "An error occurred during booking.",

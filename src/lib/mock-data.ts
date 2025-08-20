@@ -450,16 +450,18 @@ export const mockApi = {
 
   // Bookings
   createBooking: async (booking) => {
+    console.log("Booking details ", booking);
     // const newBooking = { ...booking, id: `booking-${Date.now()}` };
     // mockBookings.push(newBooking);
     const response = await fetch(`${backendUrl}/api/createReservation`, {
       method: "POST",
       headers: {
-        "Content-Type": "application.json",
+        "Content-Type": "application/json",
       },
-      body: booking,
+      body: JSON.stringify(booking),
     });
     if (!response.ok) {
+      console.error("Failed to create Booking: ",response.json());
       throw new Error("Failed to create booking");
     }
     const newBooking = await response.json();
@@ -474,7 +476,7 @@ export const mockApi = {
     });
     mockApi.addNotification({
       userId: "admin-1", // Notify admin
-      message: `New booking received from ${newBooking.passengerDetails.name} for route ${newBooking.routeId}.`,
+      message: `New booking received from ${newBooking.fullName} for route ${newBooking.startPoint} - ${newBooking.endPoint}.`,
       read: false,
       timestamp: new Date().toISOString(),
     });
