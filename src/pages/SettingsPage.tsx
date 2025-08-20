@@ -1,6 +1,4 @@
 import React from 'react';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,7 +11,6 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <h1 className="text-3xl font-bold mb-8">{t('settings.title')}</h1>
         
@@ -55,7 +52,6 @@ export default function SettingsPage() {
           </Card>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

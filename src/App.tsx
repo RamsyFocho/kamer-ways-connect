@@ -20,6 +20,8 @@ import CustomerDashboard from "./pages/CustomerDashboard";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <Header />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/agencies" element={<AgenciesPage />} />
@@ -39,25 +42,25 @@ const App = () => (
                 <Route path="/booking/:routeId" element={<BookingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
-                
+
                 {/* Protected Customer Routes */}
-                <Route 
-                  path="/bookings" 
+                <Route
+                  path="/bookings"
                   element={
                     <ProtectedRoute requiredRole="customer">
                       <CustomerDashboard />
                     </ProtectedRoute>
-                  } 
+                  }
                 />
-                
+
                 {/* Protected Admin Routes */}
-                <Route 
-                  path="/admin" 
+                <Route
+                  path="/admin"
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminDashboard />
                     </ProtectedRoute>
-                  } 
+                  }
                 />
                 <Route
                   path="/admin/agencies"
@@ -91,10 +94,11 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
-                
+
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <Footer />
             </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>

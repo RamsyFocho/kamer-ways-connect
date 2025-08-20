@@ -22,8 +22,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { mockApi, mockAgencies } from "@/lib/mock-data.ts";
 import SEO from "@/components/Seo";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -146,7 +144,6 @@ const Index = () => {
           }),
         }}
       />
-      <Header />
 
       {/* Hero Section */}
       <HeroSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
@@ -325,8 +322,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

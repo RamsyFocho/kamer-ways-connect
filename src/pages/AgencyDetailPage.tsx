@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate} from 'react-router-dom';
 import { Clock, MapPin, Users } from 'lucide-react';
-import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,7 +39,6 @@ export default function AgencyDetailPage() {
         description={`Find and book bus tickets for routes operated by ${agency.name}. View schedules, prices, and available seats for travel across Cameroon.`}
         keywords={[agency.name, "bus routes", "book tickets", ...routes.map(r => `${r.origin} to ${r.destination}`)]}
       />
-      <Header />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-4">{agency.name}</h1>
         <p className="text-muted-foreground mb-8">{agency.description || "Luxury bus services with premium amenities for discerning travelers."}</p>

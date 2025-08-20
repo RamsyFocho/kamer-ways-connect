@@ -1,5 +1,4 @@
 import React from 'react';
-import { Header } from '@/components/layout/Header';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Bus, DollarSign, TrendingUp, Menu } from 'lucide-react';
@@ -51,7 +50,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       {/* Mobile Sidebar Toggle Button */}
       <div className="md:hidden fixed top-4 left-4 z-50">
         <Button

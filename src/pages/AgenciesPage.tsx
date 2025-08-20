@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Star, Bus } from 'lucide-react';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -34,7 +32,6 @@ export default function AgenciesPage() {
         description="Browse all bus agencies operating in Cameroon. Find the best travel companies for your journey and book your tickets with KamerWays Connect."
         keywords={["bus agencies Cameroon", "travel companies Cameroon", "KamerWays Express", "Cameroon Transit"]}
       />
-      <Header />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Bus Agencies</h1>
         
@@ -80,7 +77,6 @@ export default function AgenciesPage() {
           ))}
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

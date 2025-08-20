@@ -1,12 +1,18 @@
-import React from 'react';
-import AdminSidebar from '@/components/layout/AdminSidebar';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mockApi, Booking } from '@/lib/mock-data';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import React from "react";
+import AdminSidebar from "@/components/layout/AdminSidebar";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { mockApi, Booking } from "@/lib/mock-data";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
@@ -14,7 +20,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,22 +32,26 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash2, Eye, FileText } from 'lucide-react';
+import { Trash2, Eye, FileText } from "lucide-react";
 
 const AdminBookingsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
-  const { data: bookings = [], isLoading, error } = useQuery({
-    queryKey: ['bookings'],
+
+  const {
+    data: bookings = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["bookings"],
     queryFn: mockApi.getAllBookings,
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: Booking['status'] }) =>
+    mutationFn: ({ id, status }: { id: string; status: Booking["status"] }) =>
       mockApi.updateBookingStatus(id, status),
     onSuccess: (updatedBooking) => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
       toast({
         title: "Status Updated",
         description: `Booking ${updatedBooking.id} status changed to ${updatedBooking.status}`,
@@ -53,13 +63,13 @@ const AdminBookingsPage: React.FC = () => {
         description: "Failed to update booking status",
         variant: "destructive",
       });
-    }
+    },
   });
 
   const deleteBookingMutation = useMutation({
     mutationFn: (id: string) => mockApi.deleteBooking(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
       toast({
         title: "Booking Deleted",
         description: "Booking has been successfully deleted",
@@ -71,10 +81,13 @@ const AdminBookingsPage: React.FC = () => {
         description: "Failed to delete booking",
         variant: "destructive",
       });
-    }
+    },
   });
 
-  const handleChangeStatus = (bookingId: string, newStatus: Booking['status']) => {
+  const handleChangeStatus = (
+    bookingId: string,
+    newStatus: Booking["status"]
+  ) => {
     updateStatusMutation.mutate({ id: bookingId, status: newStatus });
   };
 
@@ -82,16 +95,24 @@ const AdminBookingsPage: React.FC = () => {
     deleteBookingMutation.mutate(bookingId);
   };
 
-  const getStatusBadgeVariant = (status: Booking['status']) => {
+  const getStatusBadgeVariant = (status: Booking["status"]) => {
     switch (status) {
-      case 'confirmed': return 'default';
-      case 'pending': return 'secondary';
-      case 'cancelled': return 'destructive';
-      case 'refunded': return 'outline';
-      case 'failed': return 'destructive';
-      case 'in_progress': return 'default';
-      case 'completed': return 'default';
-      default: return 'secondary';
+      case "confirmed":
+        return "default";
+      case "pending":
+        return "secondary";
+      case "cancelled":
+        return "destructive";
+      case "refunded":
+        return "outline";
+      case "failed":
+        return "destructive";
+      case "in_progress":
+        return "default";
+      case "completed":
+        return "default";
+      default:
+        return "secondary";
     }
   };
 
@@ -125,7 +146,9 @@ const AdminBookingsPage: React.FC = () => {
         </div>
         <main className="flex-1 px-6 py-8">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-foreground">Booking Management</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              Booking Management
+            </h1>
             <p className="text-muted-foreground mt-2">
               View and manage all customer booking requests
             </p>
@@ -133,7 +156,9 @@ const AdminBookingsPage: React.FC = () => {
 
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle className="text-xl">All Bookings ({bookings.length})</CardTitle>
+              <CardTitle className="text-xl">
+                All Bookings ({bookings.length})
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {bookings.length === 0 ? (
@@ -166,47 +191,69 @@ const AdminBookingsPage: React.FC = () => {
                           </TableCell>
                           <TableCell>
                             <div>
-                              <div className="font-medium">{booking.passengerDetails.name}</div>
+                              <div className="font-medium">
+                                {booking.fullName || "N/A"}
+                              </div>
                               <div className="text-sm text-muted-foreground">
-                                ID: {booking.passengerDetails.idNumber}
+                                ID: {booking.idCardNumber || "N/A"}
                               </div>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="text-sm">
-                              <div>{booking.passengerDetails.email}</div>
-                              <div className="text-muted-foreground">{booking.passengerDetails.phone}</div>
+                              <div>{booking.email || "N/A"}</div>
+                              <div className="text-muted-foreground">
+                                {booking.phone || "N/A"}
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="text-sm">
-                              <div className="font-medium">Route: {booking.routeId}</div>
-                              <div className="text-muted-foreground">Agency: {booking.agencyId}</div>
+                              <div className="font-medium">
+                                Route: {`${booking.startPoint.toUpperCase()} -> ${booking.endPoint.toUpperCase()}` }
+                              </div>
+                              <div className="text-muted-foreground">
+                                Agency: {booking.id}
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
-                              {booking.seatNumbers.map((seat) => (
-                                <Badge key={seat} variant="outline" className="text-xs">
-                                  {seat}
-                                </Badge>
-                              ))}
+                              {Array.from(
+                                { length: booking.numberOfSeats },
+                                (_, i) => (
+                                  <Badge
+                                    key={i}
+                                    variant="outline"
+                                    className="text-xs"
+                                  >
+                                    Seat {i + 1}
+                                  </Badge>
+                                )
+                              )}
                             </div>
                           </TableCell>
+
                           <TableCell className="font-medium">
-                            {booking.totalAmount.toLocaleString()} FCFA
+                            {"N/A"} FCFA
                           </TableCell>
                           <TableCell className="text-sm">
-                            {new Date(booking.bookingDate).toLocaleDateString()}
+                            {new Date(
+                              booking.bookingDate
+                            ).toLocaleDateString() || "N/A"}
                           </TableCell>
                           <TableCell>
                             <div className="space-y-2">
-                              <Badge variant={getStatusBadgeVariant(booking.status)} className="text-xs">
-                                {booking.status.toUpperCase()}
+                              <Badge
+                                variant={getStatusBadgeVariant(booking.status)}
+                                className="text-xs"
+                              >
+                                {/* {booking.status.toUpperCase()} */}
+                                {!booking.approved ? "PENDING" : "CONFIRMED"}
                               </Badge>
                               <Select
                                 value={booking.status}
-                                onValueChange={(newStatus: Booking['status']) =>
+                                onValueChange={(newStatus: Booking["status"]) =>
                                   handleChangeStatus(booking.id, newStatus)
                                 }
                                 disabled={updateStatusMutation.isPending}
@@ -215,12 +262,24 @@ const AdminBookingsPage: React.FC = () => {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="pending">Pending</SelectItem>
-                                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                                  <SelectItem value="in_progress">In Progress</SelectItem>
-                                  <SelectItem value="completed">Completed</SelectItem>
-                                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                                  <SelectItem value="refunded">Refunded</SelectItem>
+                                  <SelectItem value="pending">
+                                    Pending
+                                  </SelectItem>
+                                  <SelectItem value="confirmed">
+                                    Confirmed
+                                  </SelectItem>
+                                  <SelectItem value="in_progress">
+                                    In Progress
+                                  </SelectItem>
+                                  <SelectItem value="completed">
+                                    Completed
+                                  </SelectItem>
+                                  <SelectItem value="cancelled">
+                                    Cancelled
+                                  </SelectItem>
+                                  <SelectItem value="refunded">
+                                    Refunded
+                                  </SelectItem>
                                   <SelectItem value="failed">Failed</SelectItem>
                                 </SelectContent>
                               </Select>
@@ -228,9 +287,15 @@ const AdminBookingsPage: React.FC = () => {
                           </TableCell>
                           <TableCell>
                             <div className="text-sm">
-                              <div className="capitalize">{booking.paymentMethod.replace('_', ' ')}</div>
-                              <Badge 
-                                variant={booking.paymentStatus === 'paid' ? 'default' : 'destructive'} 
+                              <div className="capitalize">
+                                {booking.paymentMethod.replace("_", " ").toUpperCase()}
+                              </div>
+                              <Badge
+                                variant={
+                                  booking.paymentStatus === "paid"
+                                    ? "default"
+                                    : "destructive"
+                                }
                                 className="text-xs mt-1"
                               >
                                 {booking.paymentStatus}
@@ -239,28 +304,43 @@ const AdminBookingsPage: React.FC = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                              >
                                 <Eye className="h-4 w-4" />
                               </Button>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <Button variant="destructive" size="sm" className="h-8 w-8 p-0">
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                  >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Booking</AlertDialogTitle>
+                                    <AlertDialogTitle>
+                                      Delete Booking
+                                    </AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      Are you sure you want to delete booking {booking.id}? 
-                                      This action cannot be undone and will permanently remove 
-                                      all booking data.
+                                      Are you sure you want to delete booking{" "}
+                                      {booking.id}? This action cannot be undone
+                                      and will permanently remove all booking
+                                      data.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction 
-                                      onClick={() => handleDeleteBooking(booking.id)}
+                                    <AlertDialogCancel>
+                                      Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() =>
+                                        handleDeleteBooking(booking.id)
+                                      }
                                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                     >
                                       Delete Booking
