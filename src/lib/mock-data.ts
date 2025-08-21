@@ -493,13 +493,18 @@ export const mockApi = {
     console.log("bookings Fetched =>", bookings);
     return bookings;
   },
-  updateBookingStatus: async (id: string, newStatus: Booking["status"], seatNumber: string, busNumber: string) => {
+  updateBookingStatus: async (id: string, newStatus: Booking["status"], seatNumbers: string, busNumber: string, departureTime: string, numberOfSeats: number) => {
     const bookings = await mockApi.getAllBookings();
     const bookingIndex = bookings.findIndex((b) => b.id === id);
-    // Require seatNumber and busNumber if confirming
+    // Require seatNumbers and busNumber if confirming
     if (newStatus === "confirmed") {
-      if (!seatNumber || !busNumber) {
-        return Promise.reject(new Error("Seat number and bus number are required to confirm a booking."));
+      if (!seatNumbers || !busNumber || !departureTime || !numberOfSeats) {
+        return Promise.reject(new Error("Seat numbers, bus number, number of seats, and departure time are required to confirm a booking."));
+      }
+      // Validate seatNumbers count
+      const seatArr = seatNumbers.split(',').map(s => s.trim()).filter(Boolean);
+      if (seatArr.length !== Number(numberOfSeats)) {
+        return Promise.reject(new Error(`Number of seat numbers (${seatArr.length}) does not match numberOfSeats (${numberOfSeats}).`));
       }
     }
     if (bookingIndex > -1) {
@@ -511,8 +516,10 @@ export const mockApi = {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            seatNumber: seatNumber,
+            seatNumber: seatNumbers,
             busNumber: busNumber,
+            departureTime: departureTime,
+            numberOfSeats: numberOfSeats,
           }),
         }
       );

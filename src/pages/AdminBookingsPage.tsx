@@ -56,14 +56,18 @@ const AdminBookingsPage: React.FC = () => {
     mutationFn: ({
       id,
       status,
-      seatNumber,
+      seatNumbers,
       busNumber,
+      departureTime,
+      numberOfSeats,
     }: {
       id: string;
       status: Booking["status"];
-      seatNumber: string;
+      seatNumbers: string;
       busNumber: string;
-    }) => mockApi.updateBookingStatus(id, status, seatNumber, busNumber),
+      departureTime: string;
+      numberOfSeats: number;
+    }) => mockApi.updateBookingStatus(id, status, seatNumbers, busNumber, departureTime, numberOfSeats),
     onSuccess: (updatedBooking) => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
       toast({
@@ -116,13 +120,15 @@ const AdminBookingsPage: React.FC = () => {
     }
   };
 
-  const handleConfirmBooking = (seatNumber: string, busNumber: string) => {
+  const handleConfirmBooking = (seatNumbers: string, busNumber: string, departureTime: string, numberOfSeats: number) => {
     if (selectedBookingId) {
       updateStatusMutation.mutate({
         id: selectedBookingId,
         status: "confirmed",
-        seatNumber,
+        seatNumbers,
         busNumber,
+        departureTime,
+        numberOfSeats,
       });
       setIsModalOpen(false);
       setSelectedBookingId(null);
