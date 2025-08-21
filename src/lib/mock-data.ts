@@ -461,7 +461,7 @@ export const mockApi = {
       body: JSON.stringify(booking),
     });
     if (!response.ok) {
-      console.error("Failed to create Booking: ",response.json());
+      console.error("Failed to create Booking: ", response.json());
       throw new Error("Failed to create booking");
     }
     const newBooking = await response.json();
@@ -490,21 +490,44 @@ export const mockApi = {
       throw new Error("Failed to fetch bookings");
     }
     const bookings = await response.json();
-    console.log("bookings Fetched =>",bookings);
+    console.log("bookings Fetched =>", bookings);
     return bookings;
   },
-  updateBookingStatus: (id: string, newStatus: Booking["status"]) => {
-    const bookingIndex = mockBookings.findIndex((b) => b.id === id);
+  updateBookingStatus: async (id: string, newStatus: Booking["status"], seatNumber: string, busNumber: string) => {
+    const bookings = await mockApi.getAllBookings();
+    const bookingIndex = bookings.findIndex((b) => b.id === id);
+    // Require seatNumber and busNumber if confirming
+    if (newStatus === "confirmed") {
+      if (!seatNumber || !busNumber) {
+        return Promise.reject(new Error("Seat number and bus number are required to confirm a booking."));
+      }
+    }
     if (bookingIndex > -1) {
-      mockBookings[bookingIndex].status = newStatus;
-      // Simulate notification for user about status change
+      const response = await fetch(
+        `${backendUrl}/api/${id}/approveReservation`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            seatNumber: seatNumber,
+            busNumber: busNumber,
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to update booking status");
+      }
+      const result = await response.json();
+      console.log("result ", result);
       mockApi.addNotification({
-        userId: mockBookings[bookingIndex].userId,
+        userId: bookings[bookingIndex].userId,
         message: `Your booking ${id} status has been updated to ${newStatus}.`,
         read: false,
         timestamp: new Date().toISOString(),
       });
-      return Promise.resolve(mockBookings[bookingIndex]);
+      return Promise.resolve(bookings[bookingIndex]);
     }
     return Promise.reject(new Error("Booking not found"));
   },
@@ -516,8 +539,10 @@ export const mockApi = {
     }
     return Promise.reject(new Error("Booking not found"));
   },
-  getUserBookings: (userId) =>
-    Promise.resolve(mockBookings.filter((b) => b.userId === userId)),
+  getUserBookings: async (userId) => {
+    const allBookings = await mockApi.getAllBookings();
+    return allBookings.filter((b) => b.userId === userId);
+  },
 
   // Auth
   login: (email, password) => {

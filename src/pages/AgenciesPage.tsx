@@ -11,19 +11,27 @@ import { mockApi, Agency } from '@/lib/mock-data';
 export default function AgenciesPage() {
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
     mockApi.getAgencies().then(data => {
       setAgencies(data);
       console.log("Agency in the Agencies Page");
       console.log(data);
+      setLoading(false);
     });
   }, []);
 
   const filteredAgencies = agencies.filter(agency =>
     agency.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-   
+  ); 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,7 +56,8 @@ export default function AgenciesPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAgencies.map((agency) => (
+          {filteredAgencies!==null && filteredAgencies.length>0 ?
+           filteredAgencies.map((agency) => (
             <Card key={agency.id} className="hover:shadow-brand-medium transition-all">
               <CardHeader>
                 <div className="flex items-center space-x-3">
@@ -74,7 +83,9 @@ export default function AgenciesPage() {
                 </Button>
               </CardContent>
             </Card>
-          ))}
+          )):
+          <p className="text-foreground"> No agencies available... </p>
+        }
         </div>
       </div>
     </div>

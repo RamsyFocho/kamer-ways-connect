@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,10 +33,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Trash2, Eye, FileText } from "lucide-react";
+import ConfirmBookingModal from "@/components/ui/ConfirmBookingModal";
 
 const AdminBookingsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    null
+  );
 
   const {
     data: bookings = [],
@@ -48,8 +53,17 @@ const AdminBookingsPage: React.FC = () => {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: Booking["status"] }) =>
-      mockApi.updateBookingStatus(id, status),
+    mutationFn: ({
+      id,
+      status,
+      seatNumber,
+      busNumber,
+    }: {
+      id: string;
+      status: Booking["status"];
+      seatNumber: string;
+      busNumber: string;
+    }) => mockApi.updateBookingStatus(id, status, seatNumber, busNumber),
     onSuccess: (updatedBooking) => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
       toast({
@@ -88,7 +102,31 @@ const AdminBookingsPage: React.FC = () => {
     bookingId: string,
     newStatus: Booking["status"]
   ) => {
-    updateStatusMutation.mutate({ id: bookingId, status: newStatus });
+    if (newStatus === "confirmed") {
+      setSelectedBookingId(bookingId);
+      setIsModalOpen(true);
+    } else {
+      // Directly update status for other statuses
+      updateStatusMutation.mutate({
+        id: bookingId,
+        status: newStatus,
+        seatNumber: "",
+        busNumber: "",
+      });
+    }
+  };
+
+  const handleConfirmBooking = (seatNumber: string, busNumber: string) => {
+    if (selectedBookingId) {
+      updateStatusMutation.mutate({
+        id: selectedBookingId,
+        status: "confirmed",
+        seatNumber,
+        busNumber,
+      });
+      setIsModalOpen(false);
+      setSelectedBookingId(null);
+    }
   };
 
   const handleDeleteBooking = (bookingId: string) => {
@@ -118,14 +156,14 @@ const AdminBookingsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <AdminSidebar />
-        <main className="flex-1 px-4 py-8">
+        <main className="flex-1 px-8 py-8">
           <div>Loading bookings...</div>
         </main>
       </div>
     );
-  }
+  } 
 
   if (error) {
     return (
@@ -210,7 +248,7 @@ const AdminBookingsPage: React.FC = () => {
                           <TableCell>
                             <div className="text-sm">
                               <div className="font-medium">
-                                Route: {`${booking.startPoint.toUpperCase()} -> ${booking.endPoint.toUpperCase()}` }
+                                Route: {`${booking.startPoint==null?"N/A": booking.startPoint.toUpperCase()} -> ${booking.endPoint==null?"N/A": booking.endPoint.toUpperCase()}` }
                               </div>
                               <div className="text-muted-foreground">
                                 Agency: {booking.id}
@@ -294,7 +332,7 @@ const AdminBookingsPage: React.FC = () => {
                           <TableCell>
                             <div className="text-sm">
                               <div className="capitalize">
-                                {booking.paymentMethod.replace("_", " ").toUpperCase()}
+                                {booking.paymentMethod==null ? "N/A":booking.paymentMethod.replace("_", " ").toUpperCase()}
                               </div>
                               <Badge
                                 variant={
@@ -366,6 +404,14 @@ const AdminBookingsPage: React.FC = () => {
           </Card>
         </main>
       </div>
+      {selectedBookingId && (
+        <ConfirmBookingModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onConfirm={handleConfirmBooking}
+          bookingId={selectedBookingId}
+        />
+      )}
     </div>
   );
 };

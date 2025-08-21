@@ -18,8 +18,13 @@ export default function AgencyDetailPage() {
       mockApi.getRoutes({ agencyId: id }).then(setRoutes);
     }
   }, [id]);
-
-  if (!agency) return <div>Loading...</div>;
+  if (!agency) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
   console.log(agency);
 
   const handleRedirectBooking = (routeId)=>{
@@ -75,7 +80,6 @@ export default function AgencyDetailPage() {
           ))}
         </div>
       </div>
-      <Footer />
     </div>
   );
 }
