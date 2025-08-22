@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import AgenciesPage from "./pages/AgenciesPage";
 import AgencyDetailPage from "./pages/AgencyDetailPage";
 import BookingPage from "./pages/BookingPage";
+import SearchResultsPage from "./pages/SearchResultsPage";
 import LoginPage from "./pages/LoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminAgenciesPage from "./pages/AdminAgenciesPage";
@@ -37,6 +38,7 @@ const App = () => (
               <Header />
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/search" element={<SearchResultsPage />} />
                 <Route path="/agencies" element={<AgenciesPage />} />
                 <Route path="/agencies/:id" element={<AgencyDetailPage />} />
                 <Route path="/booking/:routeId" element={<BookingPage />} />
