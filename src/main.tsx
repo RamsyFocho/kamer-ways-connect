@@ -14,10 +14,8 @@ createRoot(document.getElementById("root")!).render(
     <HelmetProvider>
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
-                <NotificationProvider>
-                   
-                    <App />
-                    
+                <NotificationProvider>                   
+                    <App />                    
                 </NotificationProvider>
             </AuthProvider>
         </QueryClientProvider>

@@ -416,6 +416,7 @@ export const mockApi = {
   // Routes
 
   getRoutes: async (params) => {
+    console.log("Get Routes params =>", params);
     try {
       const response = await fetch(`${backendUrl}/api/viewAllTrips`);
       if (!response.ok) {
@@ -424,14 +425,18 @@ export const mockApi = {
       routes = await response.json();
       console.log("Trip");
       console.log(routes);
-      if (params?.origin)
-        routes = routes.filter((r) =>
-          r.from.toLowerCase().includes(params.origin.toLowerCase())
-        );
-      if (params?.destination)
-        routes = routes.filter((r) =>
-          r.to.toLowerCase().includes(params.destination.toLowerCase())
-        );
+      console.log(params.origin + "=> ", params.destination);
+      // if(params?.origin && params?.destination){
+      //   routes = routes.filter((r)=> r.origin.toLowerCase() == params.origin.toLowerCase() && r.destination.toLowerCase() == params.destination.toLowerCase());
+      // }
+      if (params?.origin) console.log("Checked");
+      routes = routes.filter((r) =>
+        r.origin.toLowerCase().includes(params.origin.toLowerCase())
+      );
+      if (params?.destination) console.log("Checked");
+      routes = routes.filter((r) =>
+        r.destination.toLowerCase().includes(params.destination.toLowerCase())
+      );
       if (params?.date) routes = routes.filter((r) => r.date === params.date);
       if (params?.agencyId)
         routes = routes.filter((r) => r.travelAgency.id == params.agencyId);
@@ -493,18 +498,36 @@ export const mockApi = {
     console.log("bookings Fetched =>", bookings);
     return bookings;
   },
-  updateBookingStatus: async (id: string, newStatus: Booking["status"], seatNumbers: string, busNumber: string, departureTime: string, numberOfSeats: number) => {
+  updateBookingStatus: async (
+    id: string,
+    newStatus: Booking["status"],
+    seatNumbers: string,
+    busNumber: string,
+    departureTime: string,
+    numberOfSeats: number
+  ) => {
     const bookings = await mockApi.getAllBookings();
     const bookingIndex = bookings.findIndex((b) => b.id === id);
     // Require seatNumbers and busNumber if confirming
     if (newStatus === "confirmed") {
       if (!seatNumbers || !busNumber || !departureTime || !numberOfSeats) {
-        return Promise.reject(new Error("Seat numbers, bus number, number of seats, and departure time are required to confirm a booking."));
+        return Promise.reject(
+          new Error(
+            "Seat numbers, bus number, number of seats, and departure time are required to confirm a booking."
+          )
+        );
       }
       // Validate seatNumbers count
-      const seatArr = seatNumbers.split(',').map(s => s.trim()).filter(Boolean);
+      const seatArr = seatNumbers
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
       if (seatArr.length !== Number(numberOfSeats)) {
-        return Promise.reject(new Error(`Number of seat numbers (${seatArr.length}) does not match numberOfSeats (${numberOfSeats}).`));
+        return Promise.reject(
+          new Error(
+            `Number of seat numbers (${seatArr.length}) does not match numberOfSeats (${numberOfSeats}).`
+          )
+        );
       }
     }
     if (bookingIndex > -1) {

@@ -106,7 +106,7 @@ const SearchResultsPage = () => {
         
         setRoutes(routesData);
         setAgencies(agenciesData);
-        
+        console.log("Searched trip =>",routesData);
         // Set initial price range based on available routes
         if (routesData.length > 0) {
           const prices = routesData.map(r => r.price);
@@ -142,7 +142,7 @@ const SearchResultsPage = () => {
       // Amenities filter
       if (filters.amenities.length > 0) {
         const hasAllAmenities = filters.amenities.every(amenity =>
-          route.amenities.includes(amenity)
+          ["wifi","meals","charging ports"].includes(amenity)
         );
         if (!hasAllAmenities) return false;
       }
@@ -557,15 +557,15 @@ const SearchResultsPage = () => {
 
                         {/* Amenities */}
                         <div className="flex flex-wrap gap-2">
-                          {route.amenities.slice(0, 4).map(amenity => (
+                          {["wifi","meals","charging ports"].slice(0, 4).map(amenity => (
                             <Badge key={amenity} variant="outline" className="text-xs">
                               <span className="mr-1">{getAmenityIcon(amenity)}</span>
                               {amenity}
                             </Badge>
                           ))}
-                          {route.amenities.length > 4 && (
+                          {["wifi","meals","charging ports"].length > 4 && (
                             <Badge variant="outline" className="text-xs">
-                              +{route.amenities.length - 4} more
+                              +{["wifi","meals","charging ports"].length - 4} more
                             </Badge>
                           )}
                         </div>
