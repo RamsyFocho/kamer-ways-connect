@@ -114,8 +114,10 @@ const AdminBookingsPage: React.FC = () => {
       updateStatusMutation.mutate({
         id: bookingId,
         status: newStatus,
-        seatNumber: "",
+        seatNumbers: "",
         busNumber: "",
+        departureTime: "",
+        numberOfSeats: 0,
       });
     }
   };

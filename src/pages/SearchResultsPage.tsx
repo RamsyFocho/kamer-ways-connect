@@ -531,12 +531,12 @@ const SearchResultsPage = () => {
                         <div className="flex items-center gap-6 text-sm">
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span>{route.from || route.origin}</span>
+                            <span>{route.origin}</span>
                           </div>
                           <ArrowRight className="h-4 w-4 text-muted-foreground" />
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span>{route.to || route.destination}</span>
+                            <span>{route.destination}</span>
                           </div>
                         </div>
 

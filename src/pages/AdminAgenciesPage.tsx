@@ -130,7 +130,7 @@ const AdminAgenciesPage: React.FC = () => {
     e.preventDefault();
 
     createMutation.mutate(newAgency);
-    setNewAgency({ name: "", logo: "", description: "" });
+    setNewAgency({ name: "", logo: "", description: "", contactInfo: "" });
   };
 
   const handleEdit = (agency: Agency) => {
@@ -139,6 +139,7 @@ const AdminAgenciesPage: React.FC = () => {
       name: agency.name,
       logo: agency.logo,
       description: agency.description || "",
+      contactInfo: agency.contactInfo || "",
     });
   };
 
@@ -199,7 +200,7 @@ const AdminAgenciesPage: React.FC = () => {
                     setNewAgency({ ...newAgency, contactInfo: e.target.value })
                   }
                 />
-                <Button type="submit" disabled={createMutation.isLoading}>Add</Button>
+                <Button type="submit" disabled={createMutation.isPending}>Add</Button>
               </form>
             </CardContent>
           </Card>
@@ -293,7 +294,7 @@ const AdminAgenciesPage: React.FC = () => {
                           <td className="p-2 space-x-2">
                             {editingId === agency.id ? (
                               <>
-                                <Button size="sm" onClick={handleUpdate} disabled={updateMutation.isLoading}>Save</Button>
+                                <Button size="sm" onClick={handleUpdate} disabled={updateMutation.isPending}>Save</Button>
                                 <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>Cancel</Button>
                               </>
                             ) : (

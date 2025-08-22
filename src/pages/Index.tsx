@@ -146,7 +146,7 @@ const Index = () => {
       />
 
       {/* Hero Section */}
-      <HeroSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <HeroSection />
 
       {/* Stats Section */}
       <section className="py-16 bg-muted/50">

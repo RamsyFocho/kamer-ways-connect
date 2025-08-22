@@ -26,7 +26,7 @@ const fetchRoutes = async (): Promise<Route[]> => {
   }
 };
 
-const fetchAgencies = async (): Promise<Agency[]> => {
+const fetchAgencies = async () => {
   try {
     const response = await fetch(`${backendUrl}/api/agencies`);
     if (!response.ok) {
@@ -43,7 +43,7 @@ const fetchAgencies = async (): Promise<Agency[]> => {
 
 const AdminRoutesPage: React.FC = () => {
   const queryClient = useQueryClient();
-  const [newRoute, setNewRoute] = useState<Omit<Route, "id">>({
+  const [newRoute, setNewRoute] = useState({
     agencyId: "",
     origin: "",
     destination: "",
@@ -56,6 +56,7 @@ const AdminRoutesPage: React.FC = () => {
     availableSeats: 0,
     totalSeats: 0,
     date: "",
+    travelAgency: { name: "", id: "" }
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<Route>>({});
@@ -131,6 +132,7 @@ const AdminRoutesPage: React.FC = () => {
       availableSeats: 0,
       totalSeats: 0,
       date: "",
+      travelAgency: { name: "", id: "" }
     });
   };
 

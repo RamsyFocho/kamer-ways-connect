@@ -18,10 +18,10 @@ All colors MUST be HSL for proper theming.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* KamerWays Brand Primary - Professional Blue */
-    --primary: 218 82% 45%;
+    /* KamerWays Brand Primary - Indigo & Purple Mix */
+    --primary: 263 93% 65%;
     --primary-foreground: 210 40% 98%;
-    --primary-hover: 218 82% 35%;
+    --primary-hover: 270 91% 55%;
 
     /* Complementary Colors */
     --secondary: 45 85% 95%;
@@ -42,25 +42,25 @@ All colors MUST be HSL for proper theming.
     --accent-foreground: 222.2 47.4% 11.2%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 218 82% 45%;
+    --ring: 263 93% 65%;
 
     /* Design System */
     --radius: 0.75rem;
 
     /* KamerWays Specific */
-    --bus-accent: 34 89% 55%;
+    --bus-accent: 270 91% 65%;
     --travel-secondary: 210 15% 85%;
     --premium-gold: 45 85% 65%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(218 82% 45%), hsl(218 82% 35%));
-    --gradient-hero: linear-gradient(135deg, hsl(218 82% 45%), hsl(34 89% 55%));
+    --gradient-primary: linear-gradient(135deg, hsl(263 93% 65%), hsl(270 91% 55%));
+    --gradient-hero: linear-gradient(135deg, hsl(263 93% 65%), hsl(270 91% 65%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 40% 98%));
 
     /* Shadows */
-    --shadow-soft: 0 4px 20px -8px hsl(218 82% 45% / 0.15);
-    --shadow-medium: 0 8px 30px -12px hsl(218 82% 45% / 0.25);
-    --shadow-strong: 0 16px 40px -16px hsl(218 82% 45% / 0.35);
+    --shadow-soft: 0 4px 20px -8px hsl(263 93% 65% / 0.15);
+    --shadow-medium: 0 8px 30px -12px hsl(263 93% 65% / 0.25);
+    --shadow-strong: 0 16px 40px -16px hsl(263 93% 65% / 0.35);
 
     /* Animation */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -94,9 +94,9 @@ All colors MUST be HSL for proper theming.
     --popover-foreground: 210 40% 98%;
 
     /* Dark Mode Brand */
-    --primary: 218 82% 55%;
+    --primary: 263 93% 75%;
     --primary-foreground: 222.2 84% 4.9%;
-    --primary-hover: 218 82% 65%;
+    --primary-hover: 270 91% 65%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -116,16 +116,16 @@ All colors MUST be HSL for proper theming.
     --accent-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 218 82% 55%;
+    --ring: 263 93% 75%;
 
     /* Dark KamerWays Specific */
-    --bus-accent: 34 89% 65%;
+    --bus-accent: 270 91% 75%;
     --travel-secondary: 217.2 32.6% 25%;
     --premium-gold: 45 85% 75%;
 
     /* Dark Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(218 82% 55%), hsl(218 82% 45%));
-    --gradient-hero: linear-gradient(135deg, hsl(218 82% 45%), hsl(34 89% 45%));
+    --gradient-primary: linear-gradient(135deg, hsl(263 93% 75%), hsl(270 91% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(263 93% 65%), hsl(270 91% 55%));
     --gradient-card: linear-gradient(145deg, hsl(222.2 84% 6%), hsl(217.2 32.6% 8%));
 
     /* Dark Shadows */
