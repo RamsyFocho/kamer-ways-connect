@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mockApi } from '@/lib/mock-data';
+import { getNotifications ,markNotificationAsRead } from '@/lib/api-client.ts';
+// import { mockApi } from '@/lib/mock-data';
 import { useAuth } from './AuthContext';
 
 interface Notification {
@@ -27,12 +28,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const { data: notifications = [], isLoading, error } = useQuery({
     queryKey: ['notifications', user?.id],
-    queryFn: () => mockApi.getNotifications(user?.id || ''),
+    queryFn: () => getNotifications(user?.id || ''),
     enabled: !!user?.id,
   });
 
   const markAsReadMutation = useMutation({
-    mutationFn: (id: string) => mockApi.markNotificationAsRead(id),
+    mutationFn: (id: string) => markNotificationAsRead(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },

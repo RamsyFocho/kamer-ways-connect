@@ -385,206 +385,14 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL;
 let routes;
 // API Mock Functions
 export const mockApi = {
-  // Agencies
-  getAgencies: async () => {
-    try {
-      const response = await fetch(`${backendUrl}/api/agencies`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      const agencies = await response.json();
-      console.log(agencies);
-      return agencies;
-    } catch (error) {
-      console.error("Failed to fetch agencies:", error);
-      return []; // Return an empty array on error
-    }
-  },
-  getAgency: async (id) => {
-    try {
-      const response = await fetch(`${backendUrl}/api/agency/${id}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error(`Failed to fetch agency with id ${id}:`, error);
-      return null; // Return null on error
-    }
-  },
-
-  // Routes
-
-  getRoutes: async (params: {origin?: string; destination?: string; date?: string; agencyId?: string} = {}) => {
-    console.log("Get Routes params =>", params);
-    try {
-      const response = await fetch(`${backendUrl}/api/viewAllTrips`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      routes = await response.json();
-      
-      // If no search params, return all routes
-      if (!params.origin && !params.destination && !params.date && !params.agencyId) {
-        return Promise.resolve(routes);
-      }
-      
-      // Filter by search params
-      if (params?.origin) {
-        routes = routes.filter((r) =>
-          r.origin.toLowerCase().includes(params.origin.toLowerCase())
-        );
-      }
-      if (params?.destination) {
-        routes = routes.filter((r) =>
-          r.destination.toLowerCase().includes(params.destination.toLowerCase())
-        );
-      }
-      if (params?.date) routes = routes.filter((r) => r.date === params.date);
-      if (params?.agencyId)
-        routes = routes.filter((r) => r.travelAgency.id == params.agencyId);
-      
-      console.log("Filtered routes= ", routes);
-      return Promise.resolve(routes);
-    } catch (error) {
-      console.error("Failed to fetch routes:", error);
-      // Return sample data format on error
-      return [
-        {
-          id: 2,
-          origin: "Douala",
-          destination: "Kribi",
-          departureTime: "2025-08-16T06:00:00",
-          arrivalTime: "2025-08-16T11:00:00",
-          price: 4500,
-          busType: "Express",
-          availableSeats: 20,
-          totalSeats: 40,
-          duration: "5h",
-          amenities: ["wifi", "meals", "charging ports"],
-          travelAgency: {
-            id: 1,
-            name: "Guarantee Express",
-            contactInfo: null
-          }
-        }
-      ];
-    }
-  },
-  getRoute: async (id) => {
+  getRoute: async (id: string) => {
     console.log(routes);
     const route = routes.find((r) => r.id === id);
     return Promise.resolve(route || null);
   },
 
-  // Bookings
-  createBooking: async (booking) => {
-    console.log("Booking details ", booking);
-    // const newBooking = { ...booking, id: `booking-${Date.now()}` };
-    // mockBookings.push(newBooking);
-    const response = await fetch(`${backendUrl}/api/createReservation`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(booking),
-    });
-    if (!response.ok) {
-      console.error("Failed to create Booking: ", response.json());
-      throw new Error("Failed to create booking");
-    }
-    const newBooking = await response.json();
-    // Simulate notification for user and admin
-    mockApi.addNotification({
-      userId: newBooking.userId || 1,
-      message: `Your booking for route ${newBooking.fullName} has been ${
-        newBooking.status || "pending"
-      }!`,
-      read: false,
-      timestamp: new Date().toISOString(),
-    });
-    mockApi.addNotification({
-      userId: "admin-1", // Notify admin
-      message: `New booking received from ${newBooking.fullName} for route ${newBooking.startPoint} - ${newBooking.endPoint}.`,
-      read: false,
-      timestamp: new Date().toISOString(),
-    });
-    return Promise.resolve(newBooking);
-  },
-  getBooking: (id) => Promise.resolve(mockBookings.find((b) => b.id === id)),
-  // getAllBookings: () => Promise.resolve(mockBookings),
-  getAllBookings: async () => {
-    const response = await fetch(`${backendUrl}/api/viewReservations`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch bookings");
-    }
-    const bookings = await response.json();
-    console.log("bookings Fetched =>", bookings);
-    return bookings;
-  },
-  updateBookingStatus: async (
-    id: string,
-    newStatus: Booking["status"],
-    seatNumbers: string,
-    busNumber: string,
-    departureTime: string,
-    numberOfSeats: number
-  ) => {
-    const bookings = await mockApi.getAllBookings();
-    const bookingIndex = bookings.findIndex((b) => b.id === id);
-    // Require seatNumbers and busNumber if confirming
-    if (newStatus === "confirmed") {
-      if (!seatNumbers || !busNumber || !departureTime || !numberOfSeats) {
-        return Promise.reject(
-          new Error(
-            "Seat numbers, bus number, number of seats, and departure time are required to confirm a booking."
-          )
-        );
-      }
-      // Validate seatNumbers count
-      const seatArr = seatNumbers
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      if (seatArr.length !== Number(numberOfSeats)) {
-        return Promise.reject(
-          new Error(
-            `Number of seat numbers (${seatArr.length}) does not match numberOfSeats (${numberOfSeats}).`
-          )
-        );
-      }
-    }
-    if (bookingIndex > -1) {
-      const response = await fetch(
-        `${backendUrl}/api/${id}/approveReservation`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            seatNumber: seatNumbers,
-            busNumber: busNumber,
-            departureTime: departureTime,
-            numberOfSeats: numberOfSeats,
-          }),
-        }
-      );
-      if (!response.ok) {
-        throw new Error("Failed to update booking status");
-      }
-      const result = await response.json();
-      console.log("result ", result);
-      mockApi.addNotification({
-        userId: bookings[bookingIndex].userId,
-        message: `Your booking ${id} status has been updated to ${newStatus}.`,
-        read: false,
-        timestamp: new Date().toISOString(),
-      });
-      return Promise.resolve(bookings[bookingIndex]);
-    }
-    return Promise.reject(new Error("Booking not found"));
-  },
+  getBooking: (id: string) => Promise.resolve(mockBookings.find((b) => b.id === id)),
+
   deleteBooking: (id: string) => {
     const bookingIndex = mockBookings.findIndex((b) => b.id === id);
     if (bookingIndex > -1) {
@@ -593,12 +401,7 @@ export const mockApi = {
     }
     return Promise.reject(new Error("Booking not found"));
   },
-  getUserBookings: async (userId) => {
-    const allBookings = await mockApi.getAllBookings();
-    return allBookings.filter((b) => b.userId === userId);
-  },
 
-  // Auth
   login: (email, password) => {
     if (
       email === defaultCredentials.admin.email &&
@@ -621,17 +424,17 @@ export const mockApi = {
     return Promise.reject(new Error("Invalid credentials"));
   },
 
-  // Analytics
   getAnalytics: () => Promise.resolve(mockAnalytics),
 
-  // Notifications
   addNotification: (notification) => {
     const newNotif = { ...notification, id: `notif-${Date.now()}` };
     mockNotifications.push(newNotif);
     return Promise.resolve(newNotif);
   },
+
   getNotifications: (userId) =>
     Promise.resolve(mockNotifications.filter((n) => n.userId === userId)),
+
   markNotificationAsRead: (id) => {
     const notifIndex = mockNotifications.findIndex((n) => n.id === id);
     if (notifIndex > -1) {

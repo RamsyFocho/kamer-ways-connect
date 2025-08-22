@@ -10,7 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import SEO from "@/components/Seo";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { mockApi, Route } from "@/lib/mock-data";
+import { Route } from "@/lib/mock-data";
+import { createBooking } from "@/lib/api-client";
 import { 
   CheckCircle, 
   XCircle, 
@@ -78,7 +79,7 @@ export default function BookingPage() {
   });
 
   const createBookingMutation = useMutation({
-    mutationFn: mockApi.createBooking,
+    mutationFn: createBooking,
     onSuccess: () => {
       toast({
         title: "Booking Confirmed!",

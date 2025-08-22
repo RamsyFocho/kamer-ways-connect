@@ -3,7 +3,8 @@ import AdminSidebar from "@/components/layout/AdminSidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { mockApi, Booking } from "@/lib/mock-data";
+import { Booking } from "@/lib/mock-data";
+import { getAllBookings, updateBookingStatus } from "@/lib/api-client";
 import {
   Select,
   SelectContent,
@@ -49,7 +50,7 @@ const AdminBookingsPage: React.FC = () => {
     error,
   } = useQuery({
     queryKey: ["bookings"],
-    queryFn: mockApi.getAllBookings,
+    queryFn: getAllBookings,
   });
 
   const updateStatusMutation = useMutation({
@@ -67,7 +68,7 @@ const AdminBookingsPage: React.FC = () => {
       busNumber: string;
       departureTime: string;
       numberOfSeats: number;
-    }) => mockApi.updateBookingStatus(id, status, seatNumbers, busNumber, departureTime, numberOfSeats),
+    }) => updateBookingStatus(id, status, seatNumbers, busNumber, departureTime, numberOfSeats),
     onSuccess: (updatedBooking) => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
       toast({

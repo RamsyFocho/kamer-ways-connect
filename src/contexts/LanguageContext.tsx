@@ -9,6 +9,7 @@ const resources = {
       // Navigation
       'nav.home': 'Home',
       'nav.agencies': 'Agencies',
+      'nav.routes': 'Trips',
       'nav.bookings': 'My Bookings',
       'nav.admin': 'Admin Panel',
       'nav.settings': 'Settings',
@@ -75,6 +76,7 @@ const resources = {
       // Navigation
       'nav.home': 'Accueil',
       'nav.agencies': 'Agences',
+      'nav.routes': 'Routes',
       'nav.bookings': 'Mes Réservations',
       'nav.admin': 'Panneau Admin',
       'nav.settings': 'Paramètres',
@@ -141,6 +143,7 @@ const resources = {
       // Navigation
       'nav.home': 'Inicio',
       'nav.agencies': 'Agencias',
+      'nav.routes': 'Route',
       'nav.bookings': 'Mis Reservas',
       'nav.admin': 'Panel Admin',
       'nav.settings': 'Configuración',

@@ -46,7 +46,8 @@ import {
 } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
-import { mockApi, Route, Agency } from "@/lib/mock-data";
+import { getRoutes, getAgencies } from '@/lib/api-client';
+import { Route, Agency } from "@/lib/mock-data";
 import { Skeleton } from "@/components/ui/skeleton";
 import SEO from "@/components/Seo";
 import { motion } from "framer-motion";
@@ -105,12 +106,12 @@ const SearchResultsPage = () => {
       
       try {
         const [routesData, agenciesData] = await Promise.all([
-          mockApi.getRoutes({
+          getRoutes({
             origin,
             destination,
             date,
           }),
-          mockApi.getAgencies(),
+          getAgencies(),
         ]);
         
         setRoutes(routesData);
@@ -254,7 +255,7 @@ const SearchResultsPage = () => {
   const loadAllRoutes = async () => {
     setIsLoading(true);
     try {
-      const routesData = await mockApi.getRoutes({});
+      const routesData = await getRoutes({});
       setRoutes(routesData);
       setAllRoutes(routesData);
       setHasSearched(false);

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, mockApi } from '@/lib/mock-data';
-
+import { User } from '@/lib/mock-data';
+import { login as apiLogin } from '@/lib/api-client';
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -28,7 +28,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await mockApi.login(email, password);
+      console.log(email, password);
+      const response = await apiLogin({ email, password });
+      if (response.error) {
+        throw new Error(response.message);
+      }
       setUser(response.user as User);
       localStorage.setItem('kamerways-user', JSON.stringify(response.user));
       localStorage.setItem('kamerways-token', response.token);

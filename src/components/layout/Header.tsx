@@ -25,6 +25,7 @@ export function Header() {
   const navigation = [
     { name: t('nav.home'), href: '/' },
     { name: t('nav.agencies'), href: '/agencies' },
+    { name: t('nav.routes'), href: '/routes' },
     ...(isAuthenticated && user?.role === 'customer' ? [{ name: t('nav.bookings'), href: '/bookings' }] : []),
     ...(isAuthenticated && user?.role === 'admin' ? [{ name: t('nav.admin'), href: '/admin' }] : []),
   ];

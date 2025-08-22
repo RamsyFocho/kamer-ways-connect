@@ -22,22 +22,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { mockApi, mockAgencies } from "@/lib/mock-data.ts";
+// import {mockAgencies} from "@/lib/mock-data.ts";
+import {getAgencies} from "@/lib/api-client.ts";
 import SEO from "@/components/Seo";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import HeroSection from "@/components/Hero/HeroSection";
 
 const Index = () => {
+  
   const { t } = useLanguage();
-  const [agencies, setAgencies] = useState<typeof mockAgencies>([]);
+  const [agencies, setAgencies] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchAgencies = async () => {
       try {
-        const data = await mockApi.getAgencies();
+        const data = await getAgencies();
         setAgencies(data);
       } catch (error) {
         console.error("Error fetching agencies:", error);

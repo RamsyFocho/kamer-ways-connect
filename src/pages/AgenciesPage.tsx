@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import SEO from '@/components/Seo';
-import { mockApi, Agency } from '@/lib/mock-data';
+// import { mockApi, Agency } from '@/lib/mock-data';
+import {getAgencies } from '@/lib/api-client.ts';
 
 export default function AgenciesPage() {
   const [agencies, setAgencies] = useState<Agency[]>([]);
@@ -14,7 +15,7 @@ export default function AgenciesPage() {
   const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
-    mockApi.getAgencies().then(data => {
+      getAgencies().then(data => {
       setAgencies(data);
       console.log("Agency in the Agencies Page");
       console.log(data);

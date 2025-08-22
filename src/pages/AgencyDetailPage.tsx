@@ -5,7 +5,8 @@ import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/Seo';
-import { mockApi, Agency, Route } from '@/lib/mock-data';
+import { getRoutes, getAgency } from '@/lib/api-client';
+import { Agency, Route } from '@/lib/mock-data';
 
 export default function AgencyDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -14,8 +15,8 @@ export default function AgencyDetailPage() {
   const navigate = useNavigate();
   useEffect(() => {
     if (id) {
-      mockApi.getAgency(id).then(setAgency);
-      mockApi.getRoutes({ agencyId: id }).then(setRoutes);
+      getAgency(id).then(setAgency);
+      getRoutes({ agencyId: id }).then(setRoutes);
     }
   }, [id]);
   if (!agency) {

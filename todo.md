@@ -20,3 +20,5 @@
 - All admin pages are protected by role
 - Mock data is used for development; API integration can be swapped in later
 - React Query is used for server state management
+
+TODO: change all mockAPi callings

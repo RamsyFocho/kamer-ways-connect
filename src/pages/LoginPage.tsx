@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
-import { defaultCredentials } from '@/lib/mock-data';
+import { defaultCredentials } from '@/lib/api-client.ts';
 
 export default function LoginPage() {
   const { login, isAuthenticated, user } = useAuth();
