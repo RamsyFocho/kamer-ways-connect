@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import {
   MapPin,
   Clock,
@@ -14,7 +14,9 @@ import {
   Coffee,
   Zap,
   Shield,
-  Search // Added missing import
+  Search,
+  ArrowLeft,
+  RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,14 +58,18 @@ interface SearchFilters {
   amenities: string[];
   agencies: string[];
   departureTimeRange: string;
+  searchQuery: string;
 }
 
 const SearchResultsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [routes, setRoutes] = useState<Route[]>([]);
+  const [allRoutes, setAllRoutes] = useState<Route[]>([]);
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState("price");
+  const navigate = useNavigate();
+  const [hasSearched, setHasSearched] = useState(false);
   
   // Search parameters
   const origin = searchParams.get("origin") || "";
@@ -78,6 +84,7 @@ const SearchResultsPage = () => {
     amenities: [],
     agencies: [],
     departureTimeRange: "all",
+    searchQuery: "",
   });
 
   // Available filter options
@@ -94,6 +101,8 @@ const SearchResultsPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
+      setHasSearched(!!(origin || destination || date));
+      
       try {
         const [routesData, agenciesData] = await Promise.all([
           mockApi.getRoutes({
@@ -105,8 +114,10 @@ const SearchResultsPage = () => {
         ]);
         
         setRoutes(routesData);
+        setAllRoutes(routesData);
         setAgencies(agenciesData);
-        console.log("Searched trip =>",routesData);
+        console.log("Routes data =>", routesData);
+        
         // Set initial price range based on available routes
         if (routesData.length > 0) {
           const prices = routesData.map(r => r.price);
@@ -129,6 +140,17 @@ const SearchResultsPage = () => {
   // Filter and sort routes
   const filteredAndSortedRoutes = React.useMemo(() => {
     let filtered = routes.filter(route => {
+      // Search query filter
+      if (filters.searchQuery) {
+        const query = filters.searchQuery.toLowerCase();
+        const matchesSearch = 
+          route.origin?.toLowerCase().includes(query) ||
+          route.destination?.toLowerCase().includes(query) ||
+          route.travelAgency?.name?.toLowerCase().includes(query) ||
+          route.busType?.toLowerCase().includes(query);
+        if (!matchesSearch) return false;
+      }
+
       // Price filter
       if (route.price < filters.minPrice || route.price > filters.maxPrice) {
         return false;
@@ -141,20 +163,26 @@ const SearchResultsPage = () => {
 
       // Amenities filter
       if (filters.amenities.length > 0) {
+        const routeAmenities = route.amenities || ["wifi","meals","charging ports"];
         const hasAllAmenities = filters.amenities.every(amenity =>
-          ["wifi","meals","charging ports"].includes(amenity)
+          routeAmenities.includes(amenity.toLowerCase())
         );
         if (!hasAllAmenities) return false;
       }
 
       // Agency filter
-      if (filters.agencies.length > 0 && !filters.agencies.includes(route.agencyId)) {
-        return false;
+      if (filters.agencies.length > 0) {
+        const agencyMatch = filters.agencies.includes(route.agencyId) || 
+          filters.agencies.includes(route.travelAgency?.id?.toString());
+        if (!agencyMatch) return false;
       }
 
       // Time range filter
       if (filters.departureTimeRange !== "all") {
-        const hour = parseInt(route.departureTime.split(":")[0]);
+        const timeStr = route.departureTime.includes("T") ? 
+          route.departureTime.split("T")[1] : route.departureTime;
+        const hour = parseInt(timeStr.split(":")[0]);
+        
         switch (filters.departureTimeRange) {
           case "morning":
             if (hour < 6 || hour >= 12) return false;
@@ -180,11 +208,13 @@ const SearchResultsPage = () => {
         case "price":
           return a.price - b.price;
         case "duration":
-          return a.duration.localeCompare(b.duration);
+          return (a.duration || "").localeCompare(b.duration || "");
         case "departure":
           return a.departureTime.localeCompare(b.departureTime);
         case "availability":
-          return b.availableSeats - a.availableSeats;
+          return (b.availableSeats || 0) - (a.availableSeats || 0);
+        case "agency":
+          return (a.travelAgency?.name || "").localeCompare(b.travelAgency?.name || "");
         default:
           return 0;
       }
@@ -221,6 +251,22 @@ const SearchResultsPage = () => {
     setSearchParams(newParams);
   };
 
+  const loadAllRoutes = async () => {
+    setIsLoading(true);
+    try {
+      const routesData = await mockApi.getRoutes({});
+      setRoutes(routesData);
+      setAllRoutes(routesData);
+      setHasSearched(false);
+      // Update URL to remove search params
+      setSearchParams({});
+    } catch (error) {
+      console.error("Error loading all routes:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const FilterSheet = () => (
     <Sheet>
       <SheetTrigger asChild>
@@ -238,6 +284,18 @@ const SearchResultsPage = () => {
         </SheetHeader>
         
         <div className="space-y-6 mt-6">
+          {/* Search Query */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium">Search Routes</Label>
+            <Input
+              placeholder="Search by city, agency, or bus type..."
+              value={filters.searchQuery}
+              onChange={(e) =>
+                setFilters(prev => ({ ...prev, searchQuery: e.target.value }))
+              }
+            />
+          </div>
+
           {/* Price Range */}
           <div className="space-y-3">
             <Label className="text-base font-medium">Price Range (FCFA)</Label>
@@ -247,9 +305,9 @@ const SearchResultsPage = () => {
                 onValueChange={([min, max]) =>
                   setFilters(prev => ({ ...prev, minPrice: min, maxPrice: max }))
                 }
-                max={100000}
-                min={0}
-                step={1000}
+                max={Math.max(100000, ...routes.map(r => r.price))}
+                min={Math.min(0, ...routes.map(r => r.price))}
+                step={500}
                 className="w-full"
               />
               <div className="flex justify-between text-sm text-muted-foreground mt-1">
@@ -376,12 +434,13 @@ const SearchResultsPage = () => {
             variant="outline"
             className="w-full"
             onClick={() => setFilters({
-              minPrice: 0,
-              maxPrice: 100000,
+              minPrice: Math.min(0, ...routes.map(r => r.price)),
+              maxPrice: Math.max(100000, ...routes.map(r => r.price)),
               busTypes: [],
               amenities: [],
               agencies: [],
               departureTimeRange: "all",
+              searchQuery: "",
             })}
           >
             Clear All Filters
@@ -394,15 +453,23 @@ const SearchResultsPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title={`Bus Routes from ${origin} to ${destination} - KamerWays Connect`}
-        description={`Find and book bus tickets from ${origin} to ${destination}. Compare prices, schedules, and amenities from top bus agencies in Cameroon.`}
+        title={hasSearched && origin && destination ? 
+          `Bus Routes from ${origin} to ${destination} - KamerWays Connect` :
+          "All Bus Routes & Trips - KamerWays Connect"
+        }
+        description={hasSearched && origin && destination ?
+          `Find and book bus tickets from ${origin} to ${destination}. Compare prices, schedules, and amenities from top bus agencies in Cameroon.` :
+          "Browse all available bus routes and trips in Cameroon. Compare prices, schedules, and book your perfect journey with top travel agencies."
+        }
         keywords={[
           "bus routes",
-          origin,
-          destination,
-          "bus booking",
+          "bus trips", 
           "Cameroon travel",
+          "bus booking",
+          "travel agencies",
           "bus tickets",
+          ...(origin ? [origin] : []),
+          ...(destination ? [destination] : []),
         ]}
       />
 
@@ -412,10 +479,10 @@ const SearchResultsPage = () => {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
             <div>
               <h1 className="text-3xl font-bold mb-2">
-                {origin} to {destination}
+                {hasSearched && origin && destination ? `${origin} to ${destination}` : "All Available Routes"}
               </h1>
               <p className="text-muted-foreground">
-                {date && `Departure: ${new Date(date).toLocaleDateString()}`}
+                {hasSearched && date && `Departure: ${new Date(date).toLocaleDateString()}`}
                 {!isLoading && ` • ${filteredAndSortedRoutes.length} routes found`}
               </p>
             </div>
@@ -459,7 +526,7 @@ const SearchResultsPage = () => {
                 Sort by:
               </Label>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -467,6 +534,7 @@ const SearchResultsPage = () => {
                   <SelectItem value="duration">Duration</SelectItem>
                   <SelectItem value="departure">Departure Time</SelectItem>
                   <SelectItem value="availability">Availability</SelectItem>
+                  <SelectItem value="agency">Travel Agency</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -499,12 +567,31 @@ const SearchResultsPage = () => {
             <CardContent className="p-12 text-center">
               <Bus className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">No routes found</h3>
-              <p className="text-muted-foreground mb-4">
-                Try adjusting your search criteria or filters
+              <p className="text-muted-foreground mb-6">
+                {hasSearched 
+                  ? "No routes match your search criteria. Try adjusting your filters or load all available trips."
+                  : "No routes available at the moment. Please try again later."
+                }
               </p>
-              <Button variant="outline" onClick={() => window.history.back()}>
-                Go Back
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                {hasSearched && (
+                  <>
+                    <Button variant="outline" onClick={() => navigate(-1)} className="gap-2">
+                      <ArrowLeft className="h-4 w-4" />
+                      Go Back
+                    </Button>
+                    <Button onClick={loadAllRoutes} className="gap-2">
+                      <RefreshCw className="h-4 w-4" />
+                      Load All Trips
+                    </Button>
+                  </>
+                )}
+                {!hasSearched && (
+                  <Button variant="outline" onClick={() => navigate("/")}>
+                    Return Home
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
         ) : (
@@ -543,29 +630,37 @@ const SearchResultsPage = () => {
                         <div className="flex items-center gap-6 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
-                            <span>{route.departureTime} - {route.arrivalTime}</span>
+                            <span>
+                              {route.departureTime.includes("T") 
+                                ? new Date(route.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                                : route.departureTime
+                              } - {route.arrivalTime.includes("T") 
+                                ? new Date(route.arrivalTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                                : route.arrivalTime
+                              }
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
-                            <span>{route.duration}</span>
+                            <span>{route.duration || "5h"}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Users className="h-4 w-4" />
-                            <span>{route.availableSeats} seats available</span>
+                            <span>{route.availableSeats || 0} seats available</span>
                           </div>
                         </div>
 
                         {/* Amenities */}
                         <div className="flex flex-wrap gap-2">
-                          {["wifi","meals","charging ports"].slice(0, 4).map(amenity => (
+                          {(route.amenities || ["wifi","meals","charging ports"]).slice(0, 4).map(amenity => (
                             <Badge key={amenity} variant="outline" className="text-xs">
                               <span className="mr-1">{getAmenityIcon(amenity)}</span>
                               {amenity}
                             </Badge>
                           ))}
-                          {["wifi","meals","charging ports"].length > 4 && (
+                          {(route.amenities || []).length > 4 && (
                             <Badge variant="outline" className="text-xs">
-                              +{["wifi","meals","charging ports"].length - 4} more
+                              +{(route.amenities || []).length - 4} more
                             </Badge>
                           )}
                         </div>

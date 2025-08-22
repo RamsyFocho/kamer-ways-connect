@@ -415,7 +415,7 @@ export const mockApi = {
 
   // Routes
 
-  getRoutes: async (params) => {
+  getRoutes: async (params: {origin?: string; destination?: string; date?: string; agencyId?: string} = {}) => {
     console.log("Get Routes params =>", params);
     try {
       const response = await fetch(`${backendUrl}/api/viewAllTrips`);
@@ -423,28 +423,52 @@ export const mockApi = {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       routes = await response.json();
-      console.log("Trip");
-      console.log(routes);
-      console.log(params.origin + "=> ", params.destination);
-      // if(params?.origin && params?.destination){
-      //   routes = routes.filter((r)=> r.origin.toLowerCase() == params.origin.toLowerCase() && r.destination.toLowerCase() == params.destination.toLowerCase());
-      // }
-      if (params?.origin) console.log("Checked");
-      routes = routes.filter((r) =>
-        r.origin.toLowerCase().includes(params.origin.toLowerCase())
-      );
-      if (params?.destination) console.log("Checked");
-      routes = routes.filter((r) =>
-        r.destination.toLowerCase().includes(params.destination.toLowerCase())
-      );
+      
+      // If no search params, return all routes
+      if (!params.origin && !params.destination && !params.date && !params.agencyId) {
+        return Promise.resolve(routes);
+      }
+      
+      // Filter by search params
+      if (params?.origin) {
+        routes = routes.filter((r) =>
+          r.origin.toLowerCase().includes(params.origin.toLowerCase())
+        );
+      }
+      if (params?.destination) {
+        routes = routes.filter((r) =>
+          r.destination.toLowerCase().includes(params.destination.toLowerCase())
+        );
+      }
       if (params?.date) routes = routes.filter((r) => r.date === params.date);
       if (params?.agencyId)
         routes = routes.filter((r) => r.travelAgency.id == params.agencyId);
-      console.log("Sorted routes= ", routes);
+      
+      console.log("Filtered routes= ", routes);
       return Promise.resolve(routes);
     } catch (error) {
       console.error("Failed to fetch routes:", error);
-      return []; // Return an empty array on error
+      // Return sample data format on error
+      return [
+        {
+          id: 2,
+          origin: "Douala",
+          destination: "Kribi",
+          departureTime: "2025-08-16T06:00:00",
+          arrivalTime: "2025-08-16T11:00:00",
+          price: 4500,
+          busType: "Express",
+          availableSeats: 20,
+          totalSeats: 40,
+          duration: "5h",
+          amenities: ["wifi", "meals", "charging ports"],
+          travelAgency: {
+            id: 1,
+            name: "Guarantee Express",
+            contactInfo: null
+          }
+        }
+      ];
     }
   },
   getRoute: async (id) => {
