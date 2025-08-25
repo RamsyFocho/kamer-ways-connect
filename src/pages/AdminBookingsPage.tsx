@@ -36,13 +36,35 @@ import {
 import { Trash2, Eye, FileText } from "lucide-react";
 import ConfirmBookingModal from "@/components/ui/ConfirmBookingModal";
 
+// Helper functions for safe data access
+const safeUpperCase = (str: string | null | undefined): string => {
+  return str ? str.toUpperCase() : "N/A";
+};
+
+const safeDateString = (date: string | Date | null | undefined): string => {
+  if (!date) return "N/A";
+  try {
+    return new Date(date).toLocaleDateString();
+  } catch {
+    return "N/A";
+  }
+};
+
+const safeJoinRoute = (start: string | null | undefined, end: string | null | undefined): string => {
+  if (!start && !end) return "N/A";
+  return `${safeUpperCase(start)} → ${safeUpperCase(end)}`;
+};
+
+const formatPaymentMethod = (method: string | null | undefined): string => {
+  if (!method) return "N/A";
+  return method.replace("_", " ").toUpperCase();
+};
+
 const AdminBookingsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
-    null
-  );
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
 
   const {
     data: bookings = [],
@@ -68,7 +90,15 @@ const AdminBookingsPage: React.FC = () => {
       busNumber: string;
       departureTime: string;
       numberOfSeats: number;
-    }) => updateBookingStatus(id, status, seatNumbers, busNumber, departureTime, numberOfSeats),
+    }) =>
+      updateBookingStatus(
+        id,
+        status,
+        seatNumbers,
+        busNumber,
+        departureTime,
+        numberOfSeats
+      ),
     onSuccess: (updatedBooking) => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
       toast({
@@ -111,7 +141,6 @@ const AdminBookingsPage: React.FC = () => {
       setSelectedBookingId(bookingId);
       setIsModalOpen(true);
     } else {
-      // Directly update status for other statuses
       updateStatusMutation.mutate({
         id: bookingId,
         status: newStatus,
@@ -123,7 +152,12 @@ const AdminBookingsPage: React.FC = () => {
     }
   };
 
-  const handleConfirmBooking = (seatNumbers: string, busNumber: string, departureTime: string, numberOfSeats: number) => {
+  const handleConfirmBooking = (
+    seatNumbers: string,
+    busNumber: string,
+    departureTime: string,
+    numberOfSeats: number
+  ) => {
     if (selectedBookingId) {
       updateStatusMutation.mutate({
         id: selectedBookingId,
@@ -163,6 +197,10 @@ const AdminBookingsPage: React.FC = () => {
     }
   };
 
+  const getDisplayStatus = (booking: Booking): string => {
+    return booking.approved ? "CONFIRMED" : "PENDING";
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -172,7 +210,7 @@ const AdminBookingsPage: React.FC = () => {
         </main>
       </div>
     );
-  } 
+  }
 
   if (error) {
     return (
@@ -184,6 +222,8 @@ const AdminBookingsPage: React.FC = () => {
       </div>
     );
   }
+
+  const hasBookings = Array.isArray(bookings) && bookings.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -204,11 +244,11 @@ const AdminBookingsPage: React.FC = () => {
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-xl">
-                All Bookings ({bookings.length})
+                All Bookings ({hasBookings ? bookings.length : 0})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {bookings.length === 0 ? (
+              {!hasBookings ? (
                 <div className="text-center py-12">
                   <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">No bookings found.</p>
@@ -234,7 +274,7 @@ const AdminBookingsPage: React.FC = () => {
                       {bookings.map((booking) => (
                         <TableRow key={booking.id}>
                           <TableCell className="font-mono text-sm">
-                            {booking.id}
+                            {booking.id || "N/A"}
                           </TableCell>
                           <TableCell>
                             <div>
@@ -257,24 +297,23 @@ const AdminBookingsPage: React.FC = () => {
                           <TableCell>
                             <div className="text-sm">
                               <div className="font-medium">
-                                Route: {`${booking.startPoint==null?"N/A": booking.startPoint.toUpperCase()} -> ${booking.endPoint==null?"N/A": booking.endPoint.toUpperCase()}` }
+                                Route: {safeJoinRoute(booking.startPoint, booking.endPoint)}
                               </div>
                               <div className="text-muted-foreground">
-                                Agency: {booking.id}
+                                Agency: {booking.id || "N/A"}
                               </div>
                               <div className="text-muted-foreground">
-                                Period: {booking.departurePeriod}
+                                Period: {booking.departurePeriod || "N/A"}
                               </div>
                               <div className="text-muted-foreground">
-                                Type: {booking.fleetType}
+                                Type: {booking.fleetType || "N/A"}
                               </div>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
-                              {Array.from(
-                                { length: booking.numberOfSeats },
-                                (_, i) => (
+                              {booking.numberOfSeats && booking.numberOfSeats > 0 ? (
+                                Array.from({ length: booking.numberOfSeats }, (_, i) => (
                                   <Badge
                                     key={i}
                                     variant="outline"
@@ -282,18 +321,17 @@ const AdminBookingsPage: React.FC = () => {
                                   >
                                     Seat {i + 1}
                                   </Badge>
-                                )
+                                ))
+                              ) : (
+                                <span className="text-muted-foreground text-xs">No seats</span>
                               )}
                             </div>
                           </TableCell>
-
                           <TableCell className="font-medium">
                             {"N/A"} FCFA
                           </TableCell>
                           <TableCell className="text-sm">
-                            {new Date(
-                              booking.bookingDate
-                            ).toLocaleDateString() || "N/A"}
+                            {safeDateString(booking.bookingDate)}
                           </TableCell>
                           <TableCell>
                             <div className="space-y-2">
@@ -301,8 +339,7 @@ const AdminBookingsPage: React.FC = () => {
                                 variant={getStatusBadgeVariant(booking.status)}
                                 className="text-xs"
                               >
-                                {/* {booking.status.toUpperCase()} */}
-                                {!booking.approved ? "PENDING" : "CONFIRMED"}
+                                {getDisplayStatus(booking)}
                               </Badge>
                               <Select
                                 value={booking.status}
@@ -315,24 +352,12 @@ const AdminBookingsPage: React.FC = () => {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="pending">
-                                    Pending
-                                  </SelectItem>
-                                  <SelectItem value="confirmed">
-                                    Confirmed
-                                  </SelectItem>
-                                  <SelectItem value="in_progress">
-                                    In Progress
-                                  </SelectItem>
-                                  <SelectItem value="completed">
-                                    Completed
-                                  </SelectItem>
-                                  <SelectItem value="cancelled">
-                                    Cancelled
-                                  </SelectItem>
-                                  <SelectItem value="refunded">
-                                    Refunded
-                                  </SelectItem>
+                                  <SelectItem value="pending">Pending</SelectItem>
+                                  <SelectItem value="confirmed">Confirmed</SelectItem>
+                                  <SelectItem value="in_progress">In Progress</SelectItem>
+                                  <SelectItem value="completed">Completed</SelectItem>
+                                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                                  <SelectItem value="refunded">Refunded</SelectItem>
                                   <SelectItem value="failed">Failed</SelectItem>
                                 </SelectContent>
                               </Select>
@@ -341,7 +366,7 @@ const AdminBookingsPage: React.FC = () => {
                           <TableCell>
                             <div className="text-sm">
                               <div className="capitalize">
-                                {booking.paymentMethod==null ? "N/A":booking.paymentMethod.replace("_", " ").toUpperCase()}
+                                {formatPaymentMethod(booking.paymentMethod)}
                               </div>
                               <Badge
                                 variant={
@@ -351,7 +376,7 @@ const AdminBookingsPage: React.FC = () => {
                                 }
                                 className="text-xs mt-1"
                               >
-                                {booking.paymentStatus}
+                                {booking.paymentStatus || "unknown"}
                               </Badge>
                             </div>
                           </TableCell>
@@ -381,9 +406,9 @@ const AdminBookingsPage: React.FC = () => {
                                     </AlertDialogTitle>
                                     <AlertDialogDescription>
                                       Are you sure you want to delete booking{" "}
-                                      {booking.id}? This action cannot be undone
-                                      and will permanently remove all booking
-                                      data.
+                                      {booking.id || "this booking"}? This action cannot be
+                                      undone and will permanently remove all
+                                      booking data.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>

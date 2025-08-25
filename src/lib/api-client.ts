@@ -174,7 +174,7 @@ export const getAllBookings = async () => {
     if (!response.ok) {
       const error: any = new Error(`HTTP error! Status: ${response.status}`);
       error.response = { status: response.status };
-      throw error;
+      return handleApiError(error);
     }
     return await response.json();
   } catch (error) {
