@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Agency } from "@/lib/mock-data";
 import { toast } from "sonner";
 import { Menu } from "lucide-react"; // Icon for mobile menu toggle
+import defaultLogo from '../assets/busAgency/defaultLogo.jpg';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -295,9 +296,9 @@ const AdminAgenciesPage: React.FC = () => {
                                   />
                                 ) : (
                                   <img
-                                    src={agency.logo}
+                                    src={agency.logo || defaultLogo}
                                     alt={agency.name}
-                                    className="h-8 w-8 object-contain"
+                                    className="h-8 w-[4rem] rounded-md object-contain"
                                   />
                                 )}
                               </td>
@@ -390,7 +391,7 @@ const AdminAgenciesPage: React.FC = () => {
                                 />
                                 <Input
                                   placeholder="Logo URL"
-                                  value={editData.logo}
+                                  value={editData.logo }
                                   onChange={(e) =>
                                     setEditData({
                                       ...editData,
@@ -431,9 +432,9 @@ const AdminAgenciesPage: React.FC = () => {
                               <CardContent className="p-4 space-y-3">
                                 <div className="flex items-center gap-4">
                                   <img
-                                    src={agency.logo}
+                                    src={agency.logo || defaultLogo}
                                     alt={agency.name}
-                                    className="h-12 w-12 object-contain rounded-md bg-slate-100"
+                                    className="h-12 w-12 object-cover rounded-md bg-slate-100"
                                   />
                                   <div>
                                     <p className="font-bold text-lg">
