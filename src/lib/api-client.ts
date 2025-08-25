@@ -160,7 +160,7 @@ export const createBooking = async (booking: any) => {
     if (!response.ok) {
       const error: any = new Error(`HTTP error! Status: ${response.status}`);
       error.response = { status: response.status };
-      throw error;
+      return handleApiError(error, "booking");
     }
     return await response.json();
   } catch (error) {
@@ -212,6 +212,22 @@ export const updateBookingStatus = async (
       throw error;
     }
     return await response.json();
+  } catch (error) {
+    return handleApiError(error, `booking with id ${id}`);
+  }
+};
+
+export const deleteBooking = async (id: string) => {
+  try {
+    const response = await fetch(`${backendUrl}/api/reservations/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      const error: any = new Error(`HTTP error! Status: ${response.status}`);
+      error.response = { status: response.status };
+      throw error;
+    }
+    return { success: true };
   } catch (error) {
     return handleApiError(error, `booking with id ${id}`);
   }
