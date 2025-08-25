@@ -33,7 +33,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash2, Eye, FileText } from "lucide-react";
+import { Trash2, Eye, FileText, Menu } from "lucide-react";
 import ConfirmBookingModal from "@/components/ui/ConfirmBookingModal";
 
 // Helper functions for safe data access
@@ -50,7 +50,10 @@ const safeDateString = (date: string | Date | null | undefined): string => {
   }
 };
 
-const safeJoinRoute = (start: string | null | undefined, end: string | null | undefined): string => {
+const safeJoinRoute = (
+  start: string | null | undefined,
+  end: string | null | undefined
+): string => {
   if (!start && !end) return "N/A";
   return `${safeUpperCase(start)} → ${safeUpperCase(end)}`;
 };
@@ -61,10 +64,15 @@ const formatPaymentMethod = (method: string | null | undefined): string => {
 };
 
 const AdminBookingsPage: React.FC = () => {
+  // State for mobile sidebar visibility
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    null
+  );
 
   const {
     data: bookings = [],
@@ -204,8 +212,22 @@ const AdminBookingsPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <AdminSidebar />
-        <main className="flex-1 px-8 py-8">
+        <AdminSidebar
+          mobileOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+        <main className="flex-1">
+          <header className="md:hidden sticky top-0 bg-background/80 backdrop-blur-sm z-10 p-4 border-b flex items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu className="h-6 w-6" />
+              <span className="sr-only">Open Menu</span>
+            </Button>
+            <h1 className="text-xl font-bold ml-4">Booking Management</h1>
+          </header>
           <div>Loading bookings...</div>
         </main>
       </div>
@@ -215,8 +237,22 @@ const AdminBookingsPage: React.FC = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-background flex">
-        <AdminSidebar />
-        <main className="flex-1 px-4 py-8">
+        <AdminSidebar
+          mobileOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+        <main className="flex-1">
+          <header className="md:hidden sticky top-0 bg-background/80 backdrop-blur-sm z-10 p-4 border-b flex items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu className="h-6 w-6" />
+              <span className="sr-only">Open Menu</span>
+            </Button>
+            <h1 className="text-xl font-bold ml-4">Booking Management</h1>
+          </header>
           <div>Error loading bookings: {error.message}</div>
         </main>
       </div>
@@ -228,214 +264,258 @@ const AdminBookingsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="flex">
-        <div className="hidden md:block">
-          <AdminSidebar />
-        </div>
-        <main className="flex-1 px-6 py-8">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-foreground">
-              Booking Management
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              View and manage all customer booking requests
-            </p>
-          </div>
+          <AdminSidebar
+            mobileOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+          />
+        <main className="flex-1">
+          {/* Header with mobile menu button */}
+          <header className="md:hidden sticky top-0 bg-background/80 backdrop-blur-sm z-10 p-4 border-b flex items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu className="h-6 w-6" />
+              <span className="sr-only">Open Menu</span>
+            </Button>
+            <h1 className="text-xl font-bold ml-4">Booking Management</h1>
+          </header>
 
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl">
-                All Bookings ({hasBookings ? bookings.length : 0})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!hasBookings ? (
-                <div className="text-center py-12">
-                  <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No bookings found.</p>
-                </div>
-              ) : (
-                <div className="overflow-hidden rounded-lg border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Booking ID</TableHead>
-                        <TableHead>Passenger</TableHead>
-                        <TableHead>Contact</TableHead>
-                        <TableHead>Route Details</TableHead>
-                        <TableHead>Seats</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Payment</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {bookings.map((booking) => (
-                        <TableRow key={booking.id}>
-                          <TableCell className="font-mono text-sm">
-                            {booking.id || "N/A"}
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">
-                                {booking.fullName || "N/A"}
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                ID: {booking.idCardNumber || "N/A"}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <div>{booking.email || "N/A"}</div>
-                              <div className="text-muted-foreground">
-                                {booking.phone || "N/A"}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <div className="font-medium">
-                                Route: {safeJoinRoute(booking.startPoint, booking.endPoint)}
-                              </div>
-                              <div className="text-muted-foreground">
-                                Agency: {booking.id || "N/A"}
-                              </div>
-                              <div className="text-muted-foreground">
-                                Period: {booking.departurePeriod || "N/A"}
-                              </div>
-                              <div className="text-muted-foreground">
-                                Type: {booking.fleetType || "N/A"}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-wrap gap-1">
-                              {booking.numberOfSeats && booking.numberOfSeats > 0 ? (
-                                Array.from({ length: booking.numberOfSeats }, (_, i) => (
-                                  <Badge
-                                    key={i}
-                                    variant="outline"
-                                    className="text-xs"
-                                  >
-                                    Seat {i + 1}
-                                  </Badge>
-                                ))
-                              ) : (
-                                <span className="text-muted-foreground text-xs">No seats</span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {"N/A"} FCFA
-                          </TableCell>
-                          <TableCell className="text-sm">
-                            {safeDateString(booking.bookingDate)}
-                          </TableCell>
-                          <TableCell>
-                            <div className="space-y-2">
-                              <Badge
-                                variant={getStatusBadgeVariant(booking.status)}
-                                className="text-xs"
-                              >
-                                {getDisplayStatus(booking)}
-                              </Badge>
-                              <Select
-                                value={booking.status}
-                                onValueChange={(newStatus: Booking["status"]) =>
-                                  handleChangeStatus(booking.id, newStatus)
-                                }
-                                disabled={updateStatusMutation.isPending}
-                              >
-                                <SelectTrigger className="w-full text-xs h-8">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="pending">Pending</SelectItem>
-                                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                                  <SelectItem value="in_progress">In Progress</SelectItem>
-                                  <SelectItem value="completed">Completed</SelectItem>
-                                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                                  <SelectItem value="refunded">Refunded</SelectItem>
-                                  <SelectItem value="failed">Failed</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <div className="capitalize">
-                                {formatPaymentMethod(booking.paymentMethod)}
-                              </div>
-                              <Badge
-                                variant={
-                                  booking.paymentStatus === "paid"
-                                    ? "default"
-                                    : "destructive"
-                                }
-                                className="text-xs mt-1"
-                              >
-                                {booking.paymentStatus || "unknown"}
-                              </Badge>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                      Delete Booking
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Are you sure you want to delete booking{" "}
-                                      {booking.id || "this booking"}? This action cannot be
-                                      undone and will permanently remove all
-                                      booking data.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>
-                                      Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() =>
-                                        handleDeleteBooking(booking.id)
-                                      }
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
-                                      Delete Booking
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          </TableCell>
+          <div className="p-4 md:p-8">
+            <div className="hidden md:block mb-6">
+              <h1 className=" text-3xl font-bold text-foreground">
+                Booking Management
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                View and manage all customer booking requests
+              </p>
+            </div>
+
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl">
+                  All Bookings ({hasBookings ? bookings.length : 0})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!hasBookings ? (
+                  <div className="text-center py-12">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No bookings found.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-hidden rounded-lg border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Booking ID</TableHead>
+                          <TableHead>Passenger</TableHead>
+                          <TableHead>Contact</TableHead>
+                          <TableHead>Route Details</TableHead>
+                          <TableHead>Seats</TableHead>
+                          <TableHead>Amount</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Payment</TableHead>
+                          <TableHead>Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                      </TableHeader>
+                      <TableBody>
+                        {bookings.map((booking) => (
+                          <TableRow key={booking.id}>
+                            <TableCell className="font-mono text-sm">
+                              {booking.id || "N/A"}
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <div className="font-medium">
+                                  {booking.fullName || "N/A"}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  ID: {booking.idCardNumber || "N/A"}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                <div>{booking.email || "N/A"}</div>
+                                <div className="text-muted-foreground">
+                                  {booking.phone || "N/A"}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                <div className="font-medium">
+                                  Route:{" "}
+                                  {safeJoinRoute(
+                                    booking.startPoint,
+                                    booking.endPoint
+                                  )}
+                                </div>
+                                <div className="text-muted-foreground">
+                                  Agency: {booking.id || "N/A"}
+                                </div>
+                                <div className="text-muted-foreground">
+                                  Period: {booking.departurePeriod || "N/A"}
+                                </div>
+                                <div className="text-muted-foreground">
+                                  Type: {booking.fleetType || "N/A"}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-wrap gap-1">
+                                {booking.numberOfSeats &&
+                                booking.numberOfSeats > 0 ? (
+                                  Array.from(
+                                    { length: booking.numberOfSeats },
+                                    (_, i) => (
+                                      <Badge
+                                        key={i}
+                                        variant="outline"
+                                        className="text-xs"
+                                      >
+                                        Seat {i + 1}
+                                      </Badge>
+                                    )
+                                  )
+                                ) : (
+                                  <span className="text-muted-foreground text-xs">
+                                    No seats
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {"N/A"} FCFA
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              {safeDateString(booking.bookingDate)}
+                            </TableCell>
+                            <TableCell>
+                              <div className="space-y-2">
+                                <Badge
+                                  variant={getStatusBadgeVariant(
+                                    booking.status
+                                  )}
+                                  className="text-xs"
+                                >
+                                  {getDisplayStatus(booking)}
+                                </Badge>
+                                <Select
+                                  value={booking.status}
+                                  onValueChange={(
+                                    newStatus: Booking["status"]
+                                  ) =>
+                                    handleChangeStatus(booking.id, newStatus)
+                                  }
+                                  disabled={updateStatusMutation.isPending}
+                                >
+                                  <SelectTrigger className="w-full text-xs h-8">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="pending">
+                                      Pending
+                                    </SelectItem>
+                                    <SelectItem value="confirmed">
+                                      Confirmed
+                                    </SelectItem>
+                                    <SelectItem value="in_progress">
+                                      In Progress
+                                    </SelectItem>
+                                    <SelectItem value="completed">
+                                      Completed
+                                    </SelectItem>
+                                    <SelectItem value="cancelled">
+                                      Cancelled
+                                    </SelectItem>
+                                    <SelectItem value="refunded">
+                                      Refunded
+                                    </SelectItem>
+                                    <SelectItem value="failed">
+                                      Failed
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                <div className="capitalize">
+                                  {formatPaymentMethod(booking.paymentMethod)}
+                                </div>
+                                <Badge
+                                  variant={
+                                    booking.paymentStatus === "paid"
+                                      ? "default"
+                                      : "destructive"
+                                  }
+                                  className="text-xs mt-1"
+                                >
+                                  {booking.paymentStatus || "unknown"}
+                                </Badge>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        Delete Booking
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete booking{" "}
+                                        {booking.id || "this booking"}? This
+                                        action cannot be undone and will
+                                        permanently remove all booking data.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>
+                                        Cancel
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() =>
+                                          handleDeleteBooking(booking.id)
+                                        }
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Delete Booking
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </main>
       </div>
       {selectedBookingId && (
