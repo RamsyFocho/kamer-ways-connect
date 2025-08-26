@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { mockRoutes, Route, mockAgencies } from "@/lib/mock-data";
 import { AgencySelector } from "@/components/ui/AgencySelector";
 import { toast } from "sonner";
-import { Menu } from "lucide-react"; // Icon for mobile menu toggle
+import { Menu, FileText } from "lucide-react"; // Icon for mobile menu toggle
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 // Simulate API with local state for now
@@ -16,13 +16,15 @@ const fetchRoutes = async (): Promise<Route[]> => {
   try {
     const response = await fetch(`${backendUrl}/api/viewAllTrips`);
     if (!response.ok) {
+      toast.error("Failed to fetch trips/routes:", error);      
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     const data = await response.json();
     console.log("Fetched routes/trip:", data);
     return data;
   } catch (error) {
-    console.error("Failed to fetch agencies:", error);
+    console.error("Failed to fetch trips/routes:", error);
+    toast.error("Failed to fetch trips/routes:", error);
     return []; // Return an empty array on error
   }
 };
@@ -153,6 +155,7 @@ const AdminRoutesPage: React.FC = () => {
       setEditingId(null);
     }
   };
+  const hasRoutes = Array.isArray(routes) && routes.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -271,7 +274,12 @@ const AdminRoutesPage: React.FC = () => {
               <CardContent>
                 {isLoading ? (
                   <div>Loading...</div>
-                ) : (
+                ) : !hasRoutes ? (
+                  <div className="text-center py-12">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No Agencies found.</p>
+                  </div>
+                ):(
                   <>
                     {/* DESKTOP: Table View (hidden on mobile) */}
                     <div className="overflow-x-auto hidden md:block">

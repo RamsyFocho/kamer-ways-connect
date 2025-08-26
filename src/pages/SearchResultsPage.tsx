@@ -16,7 +16,8 @@ import {
   Shield,
   Search,
   ArrowLeft,
-  RefreshCw
+  RefreshCw,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,7 @@ import { Route, Agency } from "@/lib/mock-data";
 import { Skeleton } from "@/components/ui/skeleton";
 import SEO from "@/components/Seo";
 import { motion } from "framer-motion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface SearchFilters {
   minPrice: number;
@@ -69,15 +71,16 @@ const SearchResultsPage = () => {
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState("price");
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [hasSearched, setHasSearched] = useState(false);
   
-  // Search parameters
+  // Safe parameter extraction with fallbacks
   const origin = searchParams.get("origin") || "";
   const destination = searchParams.get("destination") || "";
   const date = searchParams.get("date") || "";
   
-  // Filter states
+  // Filter states with safe defaults
   const [filters, setFilters] = useState<SearchFilters>({
     minPrice: 0,
     maxPrice: 100000,
@@ -99,9 +102,25 @@ const SearchResultsPage = () => {
     { value: "night", label: "Night (12AM - 6AM)" },
   ];
 
+  // Safe array access utility
+  const safeArray = <T,>(array: T[] | null | undefined): T[] => {
+    return Array.isArray(array) ? array : [];
+  };
+
+  // Safe string access utility
+  const safeString = (str: string | null | undefined): string => {
+    return str || "";
+  };
+
+  // Safe number access utility
+  const safeNumber = (num: number | null | undefined, defaultValue = 0): number => {
+    return typeof num === 'number' ? num : defaultValue;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
+      setError(null);
       setHasSearched(!!(origin || destination || date));
       
       try {
@@ -110,26 +129,40 @@ const SearchResultsPage = () => {
             origin,
             destination,
             date,
+          }).catch(err => {
+            console.error("Error fetching routes:", err);
+            setError("Failed to load routes. Please try again.");
+            return [];
           }),
-          getAgencies(),
+          getAgencies().catch(err => {
+            console.error("Error fetching agencies:", err);
+            setError("Failed to load agencies. Routes will still be displayed.");
+            return [];
+          }),
         ]);
         
-        setRoutes(routesData);
-        setAllRoutes(routesData);
-        setAgencies(agenciesData);
-        console.log("Routes data =>", routesData);
+        const safeRoutesData = safeArray(routesData);
+        const safeAgenciesData = safeArray(agenciesData);
+        
+        setRoutes(safeRoutesData);
+        setAllRoutes(safeRoutesData);
+        setAgencies(safeAgenciesData);
         
         // Set initial price range based on available routes
-        if (routesData.length > 0) {
-          const prices = routesData.map(r => r.price);
+        if (safeRoutesData.length > 0) {
+          const prices = safeRoutesData.map(r => safeNumber(r.price, 0));
+          const minPrice = Math.min(...prices);
+          const maxPrice = Math.max(...prices);
+          
           setFilters(prev => ({
             ...prev,
-            minPrice: Math.min(...prices),
-            maxPrice: Math.max(...prices),
+            minPrice: isFinite(minPrice) ? minPrice : 0,
+            maxPrice: isFinite(maxPrice) ? maxPrice : 100000,
           }));
         }
       } catch (error) {
-        console.error("Error fetching search results:", error);
+        console.error("Unexpected error fetching search results:", error);
+        setError("An unexpected error occurred. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -138,33 +171,43 @@ const SearchResultsPage = () => {
     fetchData();
   }, [origin, destination, date]);
 
-  // Filter and sort routes
+  // Filter and sort routes with comprehensive error handling
   const filteredAndSortedRoutes = React.useMemo(() => {
-    let filtered = routes.filter(route => {
+    let filtered = safeArray(routes).filter(route => {
+      if (!route) return false;
+
       // Search query filter
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();
+        const routeOrigin = safeString(route.origin).toLowerCase();
+        const routeDestination = safeString(route.destination).toLowerCase();
+        const agencyName = safeString(route.travelAgency?.name).toLowerCase();
+        const busType = safeString(route.busType).toLowerCase();
+        
         const matchesSearch = 
-          route.origin?.toLowerCase().includes(query) ||
-          route.destination?.toLowerCase().includes(query) ||
-          route.travelAgency?.name?.toLowerCase().includes(query) ||
-          route.busType?.toLowerCase().includes(query);
+          routeOrigin.includes(query) ||
+          routeDestination.includes(query) ||
+          agencyName.includes(query) ||
+          busType.includes(query);
+        
         if (!matchesSearch) return false;
       }
 
       // Price filter
-      if (route.price < filters.minPrice || route.price > filters.maxPrice) {
+      const routePrice = safeNumber(route.price, 0);
+      if (routePrice < filters.minPrice || routePrice > filters.maxPrice) {
         return false;
       }
 
       // Bus type filter
-      if (filters.busTypes.length > 0 && !filters.busTypes.includes(route.busType)) {
+      const routeBusType = safeString(route.busType);
+      if (filters.busTypes.length > 0 && !filters.busTypes.includes(routeBusType)) {
         return false;
       }
 
       // Amenities filter
       if (filters.amenities.length > 0) {
-        const routeAmenities = route.amenities || ["wifi","meals","charging ports"];
+        const routeAmenities = safeArray(route.amenities).map(a => safeString(a).toLowerCase());
         const hasAllAmenities = filters.amenities.every(amenity =>
           routeAmenities.includes(amenity.toLowerCase())
         );
@@ -173,16 +216,25 @@ const SearchResultsPage = () => {
 
       // Agency filter
       if (filters.agencies.length > 0) {
-        const agencyMatch = filters.agencies.includes(route.agencyId) || 
-          filters.agencies.includes(route.travelAgency?.id?.toString());
+        const agencyId = safeString(route.agencyId);
+        const travelAgencyId = safeString(route.travelAgency?.id?.toString());
+        const agencyMatch = filters.agencies.includes(agencyId) || 
+          filters.agencies.includes(travelAgencyId);
         if (!agencyMatch) return false;
       }
 
       // Time range filter
       if (filters.departureTimeRange !== "all") {
-        const timeStr = route.departureTime.includes("T") ? 
-          route.departureTime.split("T")[1] : route.departureTime;
-        const hour = parseInt(timeStr.split(":")[0]);
+        const departureTime = safeString(route.departureTime);
+        let hour = 0;
+        
+        try {
+          const timeStr = departureTime.includes("T") ? 
+            departureTime.split("T")[1] : departureTime;
+          hour = parseInt(timeStr.split(":")[0]) || 0;
+        } catch (e) {
+          console.warn("Invalid departure time format:", departureTime);
+        }
         
         switch (filters.departureTimeRange) {
           case "morning":
@@ -195,7 +247,7 @@ const SearchResultsPage = () => {
             if (hour < 18 || hour >= 24) return false;
             break;
           case "night":
-            if (hour >= 6) return false;
+            if (hour >= 6 && hour < 24) return false;
             break;
         }
       }
@@ -203,19 +255,21 @@ const SearchResultsPage = () => {
       return true;
     });
 
-    // Sort routes
+    // Sort routes with safe comparisons
     filtered.sort((a, b) => {
+      if (!a || !b) return 0;
+      
       switch (sortBy) {
         case "price":
-          return a.price - b.price;
+          return safeNumber(a.price, 0) - safeNumber(b.price, 0);
         case "duration":
-          return (a.duration || "").localeCompare(b.duration || "");
+          return safeString(a.duration).localeCompare(safeString(b.duration));
         case "departure":
-          return a.departureTime.localeCompare(b.departureTime);
+          return safeString(a.departureTime).localeCompare(safeString(b.departureTime));
         case "availability":
-          return (b.availableSeats || 0) - (a.availableSeats || 0);
+          return safeNumber(b.availableSeats, 0) - safeNumber(a.availableSeats, 0);
         case "agency":
-          return (a.travelAgency?.name || "").localeCompare(b.travelAgency?.name || "");
+          return safeString(a.travelAgency?.name).localeCompare(safeString(b.travelAgency?.name));
         default:
           return 0;
       }
@@ -224,13 +278,15 @@ const SearchResultsPage = () => {
     return filtered;
   }, [routes, filters, sortBy]);
 
-  const getAgencyName = (agencyId: string) => {
-    const agency = agencies.find(a => a.id === agencyId);
+  const getAgencyName = (agencyId: string): string => {
+    if (!agencyId) return "Unknown Agency";
+    const agency = safeArray(agencies).find(a => a.id === agencyId);
     return agency?.name || "Unknown Agency";
   };
 
   const getAmenityIcon = (amenity: string) => {
-    switch (amenity.toLowerCase()) {
+    const amenityLower = safeString(amenity).toLowerCase();
+    switch (amenityLower) {
       case "wifi":
         return <Wifi className="h-3 w-3" />;
       case "meals":
@@ -254,17 +310,32 @@ const SearchResultsPage = () => {
 
   const loadAllRoutes = async () => {
     setIsLoading(true);
+    setError(null);
     try {
-      const routesData = await getRoutes({});
-      setRoutes(routesData);
-      setAllRoutes(routesData);
+      const routesData = await getRoutes({}).catch(err => {
+        setError("Failed to load all routes. Please try again.");
+        return [];
+      });
+      setRoutes(safeArray(routesData));
+      setAllRoutes(safeArray(routesData));
       setHasSearched(false);
-      // Update URL to remove search params
       setSearchParams({});
     } catch (error) {
       console.error("Error loading all routes:", error);
+      setError("An unexpected error occurred while loading routes.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const formatTime = (timeString: string): string => {
+    try {
+      if (timeString.includes("T")) {
+        return new Date(timeString).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      }
+      return timeString;
+    } catch (e) {
+      return timeString;
     }
   };
 
@@ -306,8 +377,8 @@ const SearchResultsPage = () => {
                 onValueChange={([min, max]) =>
                   setFilters(prev => ({ ...prev, minPrice: min, maxPrice: max }))
                 }
-                max={Math.max(100000, ...routes.map(r => r.price))}
-                min={Math.min(0, ...routes.map(r => r.price))}
+                max={Math.max(100000, ...safeArray(routes).map(r => safeNumber(r.price, 0)))}
+                min={Math.min(0, ...safeArray(routes).map(r => safeNumber(r.price, 0)))}
                 step={500}
                 className="w-full"
               />
@@ -322,7 +393,7 @@ const SearchResultsPage = () => {
           <div className="space-y-3">
             <Label className="text-base font-medium">Bus Type</Label>
             <div className="space-y-2">
-              {busTypes.map(type => (
+              {safeArray(busTypes).map(type => (
                 <div key={type} className="flex items-center space-x-2">
                   <Checkbox
                     id={`bustype-${type}`}
@@ -351,7 +422,7 @@ const SearchResultsPage = () => {
           <div className="space-y-3">
             <Label className="text-base font-medium">Amenities</Label>
             <div className="space-y-2">
-              {amenitiesOptions.map(amenity => (
+              {safeArray(amenitiesOptions).map(amenity => (
                 <div key={amenity} className="flex items-center space-x-2">
                   <Checkbox
                     id={`amenity-${amenity}`}
@@ -383,7 +454,7 @@ const SearchResultsPage = () => {
           <div className="space-y-3">
             <Label className="text-base font-medium">Travel Agency</Label>
             <div className="space-y-2">
-              {agencies.map(agency => (
+              {safeArray(agencies).map(agency => (
                 <div key={agency.id} className="flex items-center space-x-2">
                   <Checkbox
                     id={`agency-${agency.id}`}
@@ -421,7 +492,7 @@ const SearchResultsPage = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {timeRanges.map(range => (
+                {safeArray(timeRanges).map(range => (
                   <SelectItem key={range.value} value={range.value}>
                     {range.label}
                   </SelectItem>
@@ -434,15 +505,21 @@ const SearchResultsPage = () => {
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => setFilters({
-              minPrice: Math.min(0, ...routes.map(r => r.price)),
-              maxPrice: Math.max(100000, ...routes.map(r => r.price)),
-              busTypes: [],
-              amenities: [],
-              agencies: [],
-              departureTimeRange: "all",
-              searchQuery: "",
-            })}
+            onClick={() => {
+              const prices = safeArray(routes).map(r => safeNumber(r.price, 0));
+              const minPrice = Math.min(...prices);
+              const maxPrice = Math.max(...prices);
+              
+              setFilters({
+                minPrice: isFinite(minPrice) ? minPrice : 0,
+                maxPrice: isFinite(maxPrice) ? maxPrice : 100000,
+                busTypes: [],
+                amenities: [],
+                agencies: [],
+                departureTimeRange: "all",
+                searchQuery: "",
+              });
+            }}
           >
             Clear All Filters
           </Button>
@@ -475,6 +552,15 @@ const SearchResultsPage = () => {
       />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         {/* Search Header */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
@@ -484,7 +570,7 @@ const SearchResultsPage = () => {
               </h1>
               <p className="text-muted-foreground">
                 {hasSearched && date && `Departure: ${new Date(date).toLocaleDateString()}`}
-                {!isLoading && ` • ${filteredAndSortedRoutes.length} routes found`}
+                {!isLoading && ` • ${safeArray(filteredAndSortedRoutes).length} routes found`}
               </p>
             </div>
             
@@ -563,7 +649,7 @@ const SearchResultsPage = () => {
               </Card>
             ))}
           </div>
-        ) : filteredAndSortedRoutes.length === 0 ? (
+        ) : safeArray(filteredAndSortedRoutes).length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
               <Bus className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -597,9 +683,9 @@ const SearchResultsPage = () => {
           </Card>
         ) : (
           <div className="space-y-4">
-            {filteredAndSortedRoutes.map((route, index) => (
+            {safeArray(filteredAndSortedRoutes).map((route, index) => (
               <motion.div
-                key={route.id}
+                key={route?.id || index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
@@ -611,20 +697,20 @@ const SearchResultsPage = () => {
                       <div className="flex-1 space-y-3">
                         <div className="flex items-center justify-between">
                           <h3 className="text-lg font-semibold">
-                            {route.travelAgency?.name || getAgencyName(route.agencyId)}
+                            {route?.travelAgency?.name || getAgencyName(route?.agencyId)}
                           </h3>
-                          <Badge variant="secondary">{route.busType}</Badge>
+                          <Badge variant="secondary">{safeString(route?.busType)}</Badge>
                         </div>
                         
                         <div className="flex items-center gap-6 text-sm">
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span>{route.origin}</span>
+                            <span>{safeString(route?.origin)}</span>
                           </div>
                           <ArrowRight className="h-4 w-4 text-muted-foreground" />
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span>{route.destination}</span>
+                            <span>{safeString(route?.destination)}</span>
                           </div>
                         </div>
 
@@ -632,36 +718,30 @@ const SearchResultsPage = () => {
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
                             <span>
-                              {route.departureTime.includes("T") 
-                                ? new Date(route.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                                : route.departureTime
-                              } - {route.arrivalTime.includes("T") 
-                                ? new Date(route.arrivalTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                                : route.arrivalTime
-                              }
+                              {formatTime(safeString(route?.departureTime))} - {formatTime(safeString(route?.arrivalTime))}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
-                            <span>{route.duration || "5h"}</span>
+                            <span>{safeString(route?.duration) || "N/A"}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Users className="h-4 w-4" />
-                            <span>{route.availableSeats || 0} seats available</span>
+                            <span>{safeNumber(route?.availableSeats, 0)} seats available</span>
                           </div>
                         </div>
 
                         {/* Amenities */}
                         <div className="flex flex-wrap gap-2">
-                          {(route.amenities || ["wifi","meals","charging ports"]).slice(0, 4).map(amenity => (
-                            <Badge key={amenity} variant="outline" className="text-xs">
+                          {safeArray(route?.amenities).slice(0, 4).map((amenity, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
                               <span className="mr-1">{getAmenityIcon(amenity)}</span>
                               {amenity}
                             </Badge>
                           ))}
-                          {(route.amenities || []).length > 4 && (
+                          {safeArray(route?.amenities).length > 4 && (
                             <Badge variant="outline" className="text-xs">
-                              +{(route.amenities || []).length - 4} more
+                              +{safeArray(route?.amenities).length - 4} more
                             </Badge>
                           )}
                         </div>
@@ -671,7 +751,7 @@ const SearchResultsPage = () => {
                       <div className="lg:text-right space-y-3">
                         <div>
                           <div className="text-2xl font-bold text-primary">
-                            {route.price.toLocaleString()} FCFA
+                            {safeNumber(route?.price, 0).toLocaleString()} FCFA
                           </div>
                           <div className="text-sm text-muted-foreground">
                             per person
@@ -679,7 +759,7 @@ const SearchResultsPage = () => {
                         </div>
                         
                         <Button asChild className="w-full lg:w-auto">
-                          <Link to={`/booking/${route.id}`}>
+                          <Link to={`/booking/${route?.id}`}>
                             Book Now
                             <ArrowRight className="ml-2 h-4 w-4" />
                           </Link>

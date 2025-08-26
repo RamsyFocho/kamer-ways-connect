@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Agency } from "@/lib/mock-data";
 import { toast } from "sonner";
-import { Menu } from "lucide-react"; // Icon for mobile menu toggle
-import defaultLogo from '../assets/busAgency/defaultLogo.jpg';
+import { Menu, FileText } from "lucide-react"; // Icon for mobile menu toggle
+import defaultLogo from "../assets/busAgency/defaultLogo.jpg";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -139,6 +139,7 @@ const AdminAgenciesPage: React.FC = () => {
       });
     }
   };
+  const hasAgencies = Array.isArray(agencies) && agencies.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -235,6 +236,11 @@ const AdminAgenciesPage: React.FC = () => {
               <CardContent>
                 {isLoading ? (
                   <div>Loading...</div>
+                ) : !hasAgencies ? (
+                  <div className="text-center py-12">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No Agencies found.</p>
+                  </div>
                 ) : (
                   <>
                     {/* DESKTOP: Table View (hidden on mobile) */}
@@ -391,7 +397,7 @@ const AdminAgenciesPage: React.FC = () => {
                                 />
                                 <Input
                                   placeholder="Logo URL"
-                                  value={editData.logo }
+                                  value={editData.logo}
                                   onChange={(e) =>
                                     setEditData({
                                       ...editData,
