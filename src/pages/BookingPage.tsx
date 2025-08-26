@@ -39,7 +39,6 @@ interface BookingData {
   email: string;
   phone: string;
   age: string;
-  gender: "male" | "female" | "other";
   idNumber: string;
   selectedSeats: string[];
   paymentMethod: string;
@@ -56,9 +55,7 @@ export default function BookingPage() {
   const [bookingData, setBookingData] = useState<BookingData>({
     name: "",
     email: "",
-    phone: "",
     age: "",
-    gender: "male",
     idNumber: "",
     selectedSeats: [],
     paymentMethod: "",
@@ -94,7 +91,6 @@ export default function BookingPage() {
         description: error.message || "An error occurred during booking.",
         variant: "destructive",
       });
-      setStep(5); // Move to confirmation step even on error to show message
     },
   });
 
@@ -107,8 +103,7 @@ export default function BookingPage() {
     if (
       !bookingData.name ||
       !bookingData.email ||
-      !bookingData.phone ||
-      !bookingData.age ||
+      !bookingData.mobileNumber ||
       !bookingData.idNumber
     ) {
       toast({
@@ -165,8 +160,11 @@ export default function BookingPage() {
       email: bookingData.email,
       idCardNumber: bookingData.idNumber,
       startPoint : route.origin,
+      // origin : route.origin,
+      // destination : route.destination,
       endPoint : route.destination,
       paymentMethod:  bookingData.paymentMethod === "mobile_money" ? bookingData.mobileMoneyProvider : undefined,
+      momoNumber: bookingData.mobileNumber,
       numberOfSeats : bookingData.selectedSeats.length,
       fleetType: "VIP", //not yet implemented
       departurePeriod : "Night"  
@@ -318,7 +316,7 @@ export default function BookingPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Phone:</span>
-                  <span>{bookingData.phone}</span>
+                  <span>{bookingData.mobileNumber}</span>
                 </div>
               </div>
             </div>
@@ -439,53 +437,15 @@ export default function BookingPage() {
                   <Input
                     id="phone"
                     placeholder="Enter your phone number"
-                    value={bookingData.phone}
+                    value={bookingData.mobileNumber}
                     onChange={(e) =>
-                      setBookingData({ ...bookingData, phone: e.target.value })
+                      setBookingData({ ...bookingData, mobileNumber: e.target.value })
                     }
                     className="h-11"
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="age" className="text-sm font-medium">Age *</Label>
-                  <Input
-                    id="age"
-                    type="number"
-                    placeholder="Enter your age"
-                    value={bookingData.age}
-                    onChange={(e) =>
-                      setBookingData({ ...bookingData, age: e.target.value })
-                    }
-                    className="h-11"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="gender" className="text-sm font-medium">Gender *</Label>
-                  <Select
-                    onValueChange={(value) =>
-                      setBookingData({
-                        ...bookingData,
-                        gender: value as "male" | "female" | "other",
-                      })
-                    }
-                    defaultValue={bookingData.gender}
-                  >
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select your gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
+               <div className="space-y-2">
                   <Label htmlFor="idNumber" className="text-sm font-medium">ID Number *</Label>
                   <Input
                     id="idNumber"
@@ -792,7 +752,7 @@ export default function BookingPage() {
                 <Link to="/bookings">View My Bookings</Link>
               </Button>
               <Button asChild size="lg">
-                <Link to="/">Book Another Trip</Link>
+                <Link to="/routes">Book Another Trip</Link>
               </Button>
             </div>
           </div>

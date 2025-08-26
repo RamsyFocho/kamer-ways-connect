@@ -76,6 +76,7 @@ const formatPaymentMethod = (method: string | null | undefined): string => {
 
 const safeCurrency = (amount: any): string => {
   const n = Number(amount);
+  console.log("Amount ", n)
   if (isNaN(n) || n <= 0) return "N/A";
   return `${n.toLocaleString()} FCFA`;
 };
@@ -114,7 +115,7 @@ const AdminBookingsPage: React.FC = () => {
     !Array.isArray(bookingsData) && (bookingsData as any)?.message
       ? (bookingsData as any).message
       : null;
-
+console.log("bookings ", bookings)
   const updateStatusMutation = useMutation({
     mutationFn: ({
       id,
@@ -268,7 +269,7 @@ const AdminBookingsPage: React.FC = () => {
     if (activeTab !== "all") {
       filtered = filtered.filter(booking => 
         activeTab === "pending" ? !booking.approved : 
-        activeTab === "confirmed" ? booking.approved && booking.status === "confirmed" :
+        activeTab === "confirmed" ? booking.approved || booking.status === "confirmed" :
         booking.status === activeTab
       );
     }
@@ -628,7 +629,7 @@ const AdminBookingsPage: React.FC = () => {
                               </div>
                             </TableCell>
                             <TableCell className="font-medium">
-                              {safeCurrency((booking as any).amount ?? (booking as any).totalAmount)}
+                              {safeCurrency((booking as any).totalAmount ?? (booking as any).totalAmount)} ({booking.numberOfSeats} seats)                              
                             </TableCell>
                             <TableCell className="text-sm">
                               {safeDateString(booking.bookingDate)}
@@ -785,7 +786,7 @@ const AdminBookingsPage: React.FC = () => {
                             </div>
                             <div>
                               <div className="text-muted-foreground">Amount</div>
-                              <div>{safeCurrency((booking as any).amount ?? (booking as any).totalAmount)}</div>
+                              <div>{safeCurrency(booking.totalAmount ?? (booking as any).totalAmount)}</div>
                             </div>
                           </div>
 

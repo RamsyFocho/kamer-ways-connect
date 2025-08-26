@@ -160,11 +160,12 @@ export const createBooking = async (booking: any) => {
     if (!response.ok) {
       const error: any = new Error(`HTTP error! Status: ${response.status}`);
       error.response = { status: response.status };
-      return handleApiError(error, "booking");
+      throw error;
     }
     return await response.json();
   } catch (error) {
-    return handleApiError(error, "booking");
+    handleApiError(error, "booking");
+    throw error;
   }
 };
 
@@ -203,7 +204,7 @@ export const updateBookingStatus = async (
           busNumber: busNumber,
           departureTime: departureTime,
           numberOfSeats: numberOfSeats,
-        }),
+        })
       }
     );
     if (!response.ok) {
@@ -213,7 +214,8 @@ export const updateBookingStatus = async (
     }
     return await response.json();
   } catch (error) {
-    return handleApiError(error, `booking with id ${id}`);
+     handleApiError(error, `booking with id ${id}`);
+     return error;
   }
 };
 
