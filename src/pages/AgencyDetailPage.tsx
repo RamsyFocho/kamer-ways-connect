@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import SEO from '@/components/Seo';
 import { getRoutes, getAgency } from '@/lib/api-client';
 import { Agency, Route } from '@/lib/mock-data';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AgencyDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,9 +22,20 @@ export default function AgencyDetailPage() {
   }, [id]);
   if (!agency) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <Card key={i} className="h-full">
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-10 w-full mt-4" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
     );
   }
   console.log(agency);

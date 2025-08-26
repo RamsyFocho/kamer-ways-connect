@@ -74,6 +74,8 @@ const SearchResultsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [hasSearched, setHasSearched] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [tempPriceRange, setTempPriceRange] = useState([0, 100000]);
   
   // Safe parameter extraction with fallbacks
   const origin = searchParams.get("origin") || "";
@@ -159,6 +161,10 @@ const SearchResultsPage = () => {
             minPrice: isFinite(minPrice) ? minPrice : 0,
             maxPrice: isFinite(maxPrice) ? maxPrice : 100000,
           }));
+          setTempPriceRange([
+            isFinite(minPrice) ? minPrice : 0,
+            isFinite(maxPrice) ? maxPrice : 100000
+          ]);
         }
       } catch (error) {
         console.error("Unexpected error fetching search results:", error);
@@ -339,8 +345,20 @@ const SearchResultsPage = () => {
     }
   };
 
+  const handlePriceRangeChange = (value: number[]) => {
+    setTempPriceRange(value);
+  };
+
+  const handlePriceRangeCommit = (value: number[]) => {
+    setFilters(prev => ({
+      ...prev,
+      minPrice: value[0],
+      maxPrice: value[1]
+    }));
+  };
+
   const FilterSheet = () => (
-    <Sheet>
+    <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" className="gap-2">
           <SlidersHorizontal className="h-4 w-4" />
@@ -373,18 +391,17 @@ const SearchResultsPage = () => {
             <Label className="text-base font-medium">Price Range (FCFA)</Label>
             <div className="px-2">
               <Slider
-                value={[filters.minPrice, filters.maxPrice]}
-                onValueChange={([min, max]) =>
-                  setFilters(prev => ({ ...prev, minPrice: min, maxPrice: max }))
-                }
+                value={tempPriceRange}
+                onValueChange={handlePriceRangeChange}
+                onValueCommit={handlePriceRangeCommit}
                 max={Math.max(100000, ...safeArray(routes).map(r => safeNumber(r.price, 0)))}
                 min={Math.min(0, ...safeArray(routes).map(r => safeNumber(r.price, 0)))}
                 step={500}
                 className="w-full"
               />
               <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                <span>{filters.minPrice.toLocaleString()}</span>
-                <span>{filters.maxPrice.toLocaleString()}</span>
+                <span>{tempPriceRange[0].toLocaleString()}</span>
+                <span>{tempPriceRange[1].toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -519,6 +536,10 @@ const SearchResultsPage = () => {
                 departureTimeRange: "all",
                 searchQuery: "",
               });
+              setTempPriceRange([
+                isFinite(minPrice) ? minPrice : 0,
+                isFinite(maxPrice) ? maxPrice : 100000
+              ]);
             }}
           >
             Clear All Filters
@@ -630,20 +651,15 @@ const SearchResultsPage = () => {
 
         {/* Results */}
         {isLoading ? (
-          <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <Card key={i}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <Card key={i} className="h-full">
                 <CardContent className="p-6">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2 flex-1">
-                      <Skeleton className="h-6 w-48" />
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-4 w-64" />
-                    </div>
-                    <div className="text-right space-y-2">
-                      <Skeleton className="h-6 w-24" />
-                      <Skeleton className="h-10 w-32" />
-                    </div>
+                  <div className="space-y-4">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-10 w-full mt-4" />
                   </div>
                 </CardContent>
               </Card>
@@ -682,89 +698,87 @@ const SearchResultsPage = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {safeArray(filteredAndSortedRoutes).map((route, index) => (
               <motion.div
                 key={route?.id || index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
+                className="h-full"
               >
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                      {/* Route Info */}
-                      <div className="flex-1 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold">
-                            {route?.travelAgency?.name || getAgencyName(route?.agencyId)}
-                          </h3>
-                          <Badge variant="secondary">{safeString(route?.busType)}</Badge>
-                        </div>
-                        
-                        <div className="flex items-center gap-6 text-sm">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span>{safeString(route?.origin)}</span>
-                          </div>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span>{safeString(route?.destination)}</span>
-                          </div>
-                        </div>
+                <Card className="h-full hover:shadow-lg transition-shadow flex flex-col">
+                  <CardContent className="p-6 flex-1 flex flex-col">
+                    {/* Agency and Bus Type */}
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold line-clamp-1">
+                        {route?.travelAgency?.name || getAgencyName(route?.agencyId)}
+                      </h3>
+                      <Badge variant="secondary" className="flex-shrink-0">
+                        {safeString(route?.busType)}
+                      </Badge>
+                    </div>
+                    
+                    {/* Route */}
+                    <div className="flex items-center gap-2 text-sm mb-4">
+                      <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <span className="font-medium">{safeString(route?.origin)}</span>
+                      <ArrowRight className="h-3 w-3 text-muted-foreground mx-1 flex-shrink-0" />
+                      <span className="font-medium">{safeString(route?.destination)}</span>
+                    </div>
 
-                        <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            <span>
-                              {formatTime(safeString(route?.departureTime))} - {formatTime(safeString(route?.arrivalTime))}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span>{safeString(route?.duration) || "N/A"}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4" />
-                            <span>{safeNumber(route?.availableSeats, 0)} seats available</span>
-                          </div>
-                        </div>
-
-                        {/* Amenities */}
-                        <div className="flex flex-wrap gap-2">
-                          {safeArray(route?.amenities).slice(0, 4).map((amenity, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
-                              <span className="mr-1">{getAmenityIcon(amenity)}</span>
-                              {amenity}
-                            </Badge>
-                          ))}
-                          {safeArray(route?.amenities).length > 4 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{safeArray(route?.amenities).length - 4} more
-                            </Badge>
-                          )}
-                        </div>
+                    {/* Schedule */}
+                    <div className="space-y-2 text-sm text-muted-foreground mb-4">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 flex-shrink-0" />
+                        <span>
+                          {formatTime(safeString(route?.departureTime))} - {formatTime(safeString(route?.arrivalTime))}
+                        </span>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 flex-shrink-0" />
+                        <span>{safeString(route?.duration) || "N/A"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 flex-shrink-0" />
+                        <span>{safeNumber(route?.availableSeats, 0)} seats available</span>
+                      </div>
+                    </div>
 
-                      {/* Price and Book */}
-                      <div className="lg:text-right space-y-3">
+                    {/* Amenities */}
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {safeArray(route?.amenities).slice(0, 3).map((amenity, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">
+                          <span className="mr-1">{getAmenityIcon(amenity)}</span>
+                          {amenity}
+                        </Badge>
+                      ))}
+                      {safeArray(route?.amenities).length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{safeArray(route?.amenities).length - 3}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Price and Book Button */}
+                    <div className="mt-auto pt-4 border-t">
+                      <div className="flex items-center justify-between mb-3">
                         <div>
-                          <div className="text-2xl font-bold text-primary">
+                          <div className="text-xl font-bold text-primary">
                             {safeNumber(route?.price, 0).toLocaleString()} FCFA
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-xs text-muted-foreground">
                             per person
                           </div>
                         </div>
-                        
-                        <Button asChild className="w-full lg:w-auto">
-                          <Link to={`/booking/${route?.id}`}>
-                            Book Now
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
                       </div>
+                      
+                      <Button asChild className="w-full">
+                        <Link to={`/booking/${route?.id}`}>
+                          Book Now
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
