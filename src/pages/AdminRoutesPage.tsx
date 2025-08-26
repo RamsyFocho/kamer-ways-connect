@@ -165,7 +165,7 @@ const AdminRoutesPage: React.FC = () => {
           onClose={() => setIsSidebarOpen(false)}
         />
 
-        <main className="flex-1">
+        <main className="flex-1 transition-all duration-300 ">
           {/* Header with mobile menu button */}
           <header className="md:hidden sticky top-0 bg-background/80 backdrop-blur-sm z-10 p-4 border-b flex items-center">
             <Button
