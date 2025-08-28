@@ -121,7 +121,7 @@ const SearchResultsPage = () => {
         
         // Set initial price range based on available routes
         if (routesData.length > 0) {
-          const prices = routesData.map(r => r.price);
+          const prices = routesData.map(r => r.price || 0);
           setFilters(prev => ({
             ...prev,
             minPrice: Math.min(...prices),
@@ -152,17 +152,18 @@ const SearchResultsPage = () => {
         if (!matchesSearch) return false;
       }
 
-      // Price filter
-      if (route.price < filters.minPrice || route.price > filters.maxPrice) {
+      // Price filter - added null check for route.price
+      const routePrice = route.price || 0;
+      if (routePrice < filters.minPrice || routePrice > filters.maxPrice) {
         return false;
       }
 
-      // Bus type filter
-      if (filters.busTypes.length > 0 && !filters.busTypes.includes(route.busType)) {
+      // Bus type filter - added null check for route.busType
+      if (filters.busTypes.length > 0 && route.busType && !filters.busTypes.includes(route.busType)) {
         return false;
       }
 
-      // Amenities filter
+      // Amenities filter - added null check for route.amenities
       if (filters.amenities.length > 0) {
         const routeAmenities = route.amenities || ["wifi","meals","charging ports"];
         const hasAllAmenities = filters.amenities.every(amenity =>
@@ -171,18 +172,27 @@ const SearchResultsPage = () => {
         if (!hasAllAmenities) return false;
       }
 
-      // Agency filter
+      // Agency filter - added null checks for agencyId and travelAgency
       if (filters.agencies.length > 0) {
-        const agencyMatch = filters.agencies.includes(route.agencyId) || 
-          filters.agencies.includes(route.travelAgency?.id?.toString());
+        const agencyMatch = 
+          (route.agencyId && filters.agencies.includes(route.agencyId)) || 
+          (route.travelAgency?.id && filters.agencies.includes(route.travelAgency.id.toString()));
         if (!agencyMatch) return false;
       }
 
-      // Time range filter
-      if (filters.departureTimeRange !== "all") {
+      // Time range filter - added comprehensive null checks for departureTime
+      if (filters.departureTimeRange !== "all" && route.departureTime) {
         const timeStr = route.departureTime.includes("T") ? 
           route.departureTime.split("T")[1] : route.departureTime;
-        const hour = parseInt(timeStr.split(":")[0]);
+        
+        // Extract hour safely
+        let hour = 0;
+        if (timeStr) {
+          const timeParts = timeStr.split(":");
+          if (timeParts.length > 0) {
+            hour = parseInt(timeParts[0]) || 0;
+          }
+        }
         
         switch (filters.departureTimeRange) {
           case "morning":
@@ -203,15 +213,15 @@ const SearchResultsPage = () => {
       return true;
     });
 
-    // Sort routes
+    // Sort routes with null checks
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "price":
-          return a.price - b.price;
+          return (a.price || 0) - (b.price || 0);
         case "duration":
           return (a.duration || "").localeCompare(b.duration || "");
         case "departure":
-          return a.departureTime.localeCompare(b.departureTime);
+          return (a.departureTime || "").localeCompare(b.departureTime || "");
         case "availability":
           return (b.availableSeats || 0) - (a.availableSeats || 0);
         case "agency":
@@ -306,8 +316,8 @@ const SearchResultsPage = () => {
                 onValueChange={([min, max]) =>
                   setFilters(prev => ({ ...prev, minPrice: min, maxPrice: max }))
                 }
-                max={Math.max(100000, ...routes.map(r => r.price))}
-                min={Math.min(0, ...routes.map(r => r.price))}
+                max={Math.max(100000, ...routes.map(r => r.price || 0))}
+                min={Math.min(0, ...routes.map(r => r.price || 0))}
                 step={500}
                 className="w-full"
               />
@@ -435,8 +445,8 @@ const SearchResultsPage = () => {
             variant="outline"
             className="w-full"
             onClick={() => setFilters({
-              minPrice: Math.min(0, ...routes.map(r => r.price)),
-              maxPrice: Math.max(100000, ...routes.map(r => r.price)),
+              minPrice: Math.min(0, ...routes.map(r => r.price || 0)),
+              maxPrice: Math.max(100000, ...routes.map(r => r.price || 0)),
               busTypes: [],
               amenities: [],
               agencies: [],
@@ -611,20 +621,20 @@ const SearchResultsPage = () => {
                       <div className="flex-1 space-y-3">
                         <div className="flex items-center justify-between">
                           <h3 className="text-lg font-semibold">
-                            {route.travelAgency?.name || getAgencyName(route.agencyId)}
+                            {route.travelAgency?.name || getAgencyName(route.agencyId || "")}
                           </h3>
-                          <Badge variant="secondary">{route.busType}</Badge>
+                          <Badge variant="secondary">{route.busType || "Standard"}</Badge>
                         </div>
                         
                         <div className="flex items-center gap-6 text-sm">
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span>{route.origin}</span>
+                            <span>{route.origin || "Unknown"}</span>
                           </div>
                           <ArrowRight className="h-4 w-4 text-muted-foreground" />
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span>{route.destination}</span>
+                            <span>{route.destination || "Unknown"}</span>
                           </div>
                         </div>
 
@@ -632,18 +642,18 @@ const SearchResultsPage = () => {
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
                             <span>
-                              {route.departureTime.includes("T") 
+                              {route.departureTime && route.departureTime.includes("T") 
                                 ? new Date(route.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                                : route.departureTime
-                              } - {route.arrivalTime.includes("T") 
+                                : route.departureTime || "N/A"
+                              } - {route.arrivalTime && route.arrivalTime.includes("T") 
                                 ? new Date(route.arrivalTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                                : route.arrivalTime
+                                : route.arrivalTime || "N/A"
                               }
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
-                            <span>{route.duration || "5h"}</span>
+                            <span>{route.duration || "N/A"}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Users className="h-4 w-4" />
@@ -671,7 +681,7 @@ const SearchResultsPage = () => {
                       <div className="lg:text-right space-y-3">
                         <div>
                           <div className="text-2xl font-bold text-primary">
-                            {route.price.toLocaleString()} FCFA
+                            {(route.price || 0).toLocaleString()} FCFA
                           </div>
                           <div className="text-sm text-muted-foreground">
                             per person
