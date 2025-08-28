@@ -16,7 +16,8 @@ import {
   Shield,
   Search,
   ArrowLeft,
-  RefreshCw
+  RefreshCw,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,7 @@ import { Route, Agency } from "@/lib/mock-data";
 import { Skeleton } from "@/components/ui/skeleton";
 import SEO from "@/components/Seo";
 import { motion } from "framer-motion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface SearchFilters {
   minPrice: number;
@@ -69,15 +71,18 @@ const SearchResultsPage = () => {
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState("price");
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [hasSearched, setHasSearched] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [tempPriceRange, setTempPriceRange] = useState([0, 100000]);
   
-  // Search parameters
+  // Safe parameter extraction with fallbacks
   const origin = searchParams.get("origin") || "";
   const destination = searchParams.get("destination") || "";
   const date = searchParams.get("date") || "";
   
-  // Filter states
+  // Filter states with safe defaults
   const [filters, setFilters] = useState<SearchFilters>({
     minPrice: 0,
     maxPrice: 100000,
@@ -99,9 +104,25 @@ const SearchResultsPage = () => {
     { value: "night", label: "Night (12AM - 6AM)" },
   ];
 
+  // Safe array access utility
+  const safeArray = <T,>(array: T[] | null | undefined): T[] => {
+    return Array.isArray(array) ? array : [];
+  };
+
+  // Safe string access utility
+  const safeString = (str: string | null | undefined): string => {
+    return str || "";
+  };
+
+  // Safe number access utility
+  const safeNumber = (num: number | null | undefined, defaultValue = 0): number => {
+    return typeof num === 'number' ? num : defaultValue;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
+      setError(null);
       setHasSearched(!!(origin || destination || date));
       
       try {
@@ -110,26 +131,44 @@ const SearchResultsPage = () => {
             origin,
             destination,
             date,
+          }).catch(err => {
+            console.error("Error fetching routes:", err);
+            setError("Failed to load routes. Please try again.");
+            return [];
           }),
-          getAgencies(),
+          getAgencies().catch(err => {
+            console.error("Error fetching agencies:", err);
+            setError("Failed to load agencies. Routes will still be displayed.");
+            return [];
+          }),
         ]);
         
-        setRoutes(routesData);
-        setAllRoutes(routesData);
-        setAgencies(agenciesData);
-        console.log("Routes data =>", routesData);
+        const safeRoutesData = safeArray(routesData);
+        const safeAgenciesData = safeArray(agenciesData);
+        
+        setRoutes(safeRoutesData);
+        setAllRoutes(safeRoutesData);
+        setAgencies(safeAgenciesData);
         
         // Set initial price range based on available routes
-        if (routesData.length > 0) {
-          const prices = routesData.map(r => r.price || 0);
+        if (safeRoutesData.length > 0) {
+          const prices = safeRoutesData.map(r => safeNumber(r.price, 0));
+          const minPrice = Math.min(...prices);
+          const maxPrice = Math.max(...prices);
+          
           setFilters(prev => ({
             ...prev,
-            minPrice: Math.min(...prices),
-            maxPrice: Math.max(...prices),
+            minPrice: isFinite(minPrice) ? minPrice : 0,
+            maxPrice: isFinite(maxPrice) ? maxPrice : 100000,
           }));
+          setTempPriceRange([
+            isFinite(minPrice) ? minPrice : 0,
+            isFinite(maxPrice) ? maxPrice : 100000
+          ]);
         }
       } catch (error) {
-        console.error("Error fetching search results:", error);
+        console.error("Unexpected error fetching search results:", error);
+        setError("An unexpected error occurred. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -138,34 +177,43 @@ const SearchResultsPage = () => {
     fetchData();
   }, [origin, destination, date]);
 
-  // Filter and sort routes
+  // Filter and sort routes with comprehensive error handling
   const filteredAndSortedRoutes = React.useMemo(() => {
-    let filtered = routes.filter(route => {
+    let filtered = safeArray(routes).filter(route => {
+      if (!route) return false;
+
       // Search query filter
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();
+        const routeOrigin = safeString(route.origin).toLowerCase();
+        const routeDestination = safeString(route.destination).toLowerCase();
+        const agencyName = safeString(route.travelAgency?.name).toLowerCase();
+        const busType = safeString(route.busType).toLowerCase();
+        
         const matchesSearch = 
-          route.origin?.toLowerCase().includes(query) ||
-          route.destination?.toLowerCase().includes(query) ||
-          route.travelAgency?.name?.toLowerCase().includes(query) ||
-          route.busType?.toLowerCase().includes(query);
+          routeOrigin.includes(query) ||
+          routeDestination.includes(query) ||
+          agencyName.includes(query) ||
+          busType.includes(query);
+        
         if (!matchesSearch) return false;
       }
 
-      // Price filter - added null check for route.price
-      const routePrice = route.price || 0;
+      // Price filter
+      const routePrice = safeNumber(route.price, 0);
       if (routePrice < filters.minPrice || routePrice > filters.maxPrice) {
         return false;
       }
 
-      // Bus type filter - added null check for route.busType
-      if (filters.busTypes.length > 0 && route.busType && !filters.busTypes.includes(route.busType)) {
+      // Bus type filter
+      const routeBusType = safeString(route.busType);
+      if (filters.busTypes.length > 0 && !filters.busTypes.includes(routeBusType)) {
         return false;
       }
 
       // Amenities filter - added null check for route.amenities
       if (filters.amenities.length > 0) {
-        const routeAmenities = route.amenities || ["wifi","meals","charging ports"];
+        const routeAmenities = safeArray(route.amenities).map(a => safeString(a).toLowerCase());
         const hasAllAmenities = filters.amenities.every(amenity =>
           routeAmenities.includes(amenity.toLowerCase())
         );
@@ -174,24 +222,24 @@ const SearchResultsPage = () => {
 
       // Agency filter - added null checks for agencyId and travelAgency
       if (filters.agencies.length > 0) {
-        const agencyMatch = 
-          (route.agencyId && filters.agencies.includes(route.agencyId)) || 
-          (route.travelAgency?.id && filters.agencies.includes(route.travelAgency.id.toString()));
+        const agencyId = safeString(route.agencyId);
+        const travelAgencyId = safeString(route.travelAgency?.id?.toString());
+        const agencyMatch = filters.agencies.includes(agencyId) || 
+          filters.agencies.includes(travelAgencyId);
         if (!agencyMatch) return false;
       }
 
-      // Time range filter - added comprehensive null checks for departureTime
-      if (filters.departureTimeRange !== "all" && route.departureTime) {
-        const timeStr = route.departureTime.includes("T") ? 
-          route.departureTime.split("T")[1] : route.departureTime;
-        
-        // Extract hour safely
+      // Time range filter
+      if (filters.departureTimeRange !== "all") {
+        const departureTime = safeString(route.departureTime);
         let hour = 0;
-        if (timeStr) {
-          const timeParts = timeStr.split(":");
-          if (timeParts.length > 0) {
-            hour = parseInt(timeParts[0]) || 0;
-          }
+        
+        try {
+          const timeStr = departureTime.includes("T") ? 
+            departureTime.split("T")[1] : departureTime;
+          hour = parseInt(timeStr.split(":")[0]) || 0;
+        } catch (e) {
+          console.warn("Invalid departure time format:", departureTime);
         }
         
         switch (filters.departureTimeRange) {
@@ -205,7 +253,7 @@ const SearchResultsPage = () => {
             if (hour < 18 || hour >= 24) return false;
             break;
           case "night":
-            if (hour >= 6) return false;
+            if (hour >= 6 && hour < 24) return false;
             break;
         }
       }
@@ -213,19 +261,21 @@ const SearchResultsPage = () => {
       return true;
     });
 
-    // Sort routes with null checks
+    // Sort routes with safe comparisons
     filtered.sort((a, b) => {
+      if (!a || !b) return 0;
+      
       switch (sortBy) {
         case "price":
-          return (a.price || 0) - (b.price || 0);
+          return safeNumber(a.price, 0) - safeNumber(b.price, 0);
         case "duration":
-          return (a.duration || "").localeCompare(b.duration || "");
+          return safeString(a.duration).localeCompare(safeString(b.duration));
         case "departure":
-          return (a.departureTime || "").localeCompare(b.departureTime || "");
+          return safeString(a.departureTime).localeCompare(safeString(b.departureTime));
         case "availability":
-          return (b.availableSeats || 0) - (a.availableSeats || 0);
+          return safeNumber(b.availableSeats, 0) - safeNumber(a.availableSeats, 0);
         case "agency":
-          return (a.travelAgency?.name || "").localeCompare(b.travelAgency?.name || "");
+          return safeString(a.travelAgency?.name).localeCompare(safeString(b.travelAgency?.name));
         default:
           return 0;
       }
@@ -234,13 +284,15 @@ const SearchResultsPage = () => {
     return filtered;
   }, [routes, filters, sortBy]);
 
-  const getAgencyName = (agencyId: string) => {
-    const agency = agencies.find(a => a.id === agencyId);
+  const getAgencyName = (agencyId: string): string => {
+    if (!agencyId) return "Unknown Agency";
+    const agency = safeArray(agencies).find(a => a.id === agencyId);
     return agency?.name || "Unknown Agency";
   };
 
   const getAmenityIcon = (amenity: string) => {
-    switch (amenity.toLowerCase()) {
+    const amenityLower = safeString(amenity).toLowerCase();
+    switch (amenityLower) {
       case "wifi":
         return <Wifi className="h-3 w-3" />;
       case "meals":
@@ -264,22 +316,49 @@ const SearchResultsPage = () => {
 
   const loadAllRoutes = async () => {
     setIsLoading(true);
+    setError(null);
     try {
-      const routesData = await getRoutes({});
-      setRoutes(routesData);
-      setAllRoutes(routesData);
+      const routesData = await getRoutes({}).catch(err => {
+        setError("Failed to load all routes. Please try again.");
+        return [];
+      });
+      setRoutes(safeArray(routesData));
+      setAllRoutes(safeArray(routesData));
       setHasSearched(false);
-      // Update URL to remove search params
       setSearchParams({});
     } catch (error) {
       console.error("Error loading all routes:", error);
+      setError("An unexpected error occurred while loading routes.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const formatTime = (timeString: string): string => {
+    try {
+      if (timeString.includes("T")) {
+        return new Date(timeString).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      }
+      return timeString;
+    } catch (e) {
+      return timeString;
+    }
+  };
+
+  const handlePriceRangeChange = (value: number[]) => {
+    setTempPriceRange(value);
+  };
+
+  const handlePriceRangeCommit = (value: number[]) => {
+    setFilters(prev => ({
+      ...prev,
+      minPrice: value[0],
+      maxPrice: value[1]
+    }));
+  };
+
   const FilterSheet = () => (
-    <Sheet>
+    <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" className="gap-2">
           <SlidersHorizontal className="h-4 w-4" />
@@ -312,18 +391,17 @@ const SearchResultsPage = () => {
             <Label className="text-base font-medium">Price Range (FCFA)</Label>
             <div className="px-2">
               <Slider
-                value={[filters.minPrice, filters.maxPrice]}
-                onValueChange={([min, max]) =>
-                  setFilters(prev => ({ ...prev, minPrice: min, maxPrice: max }))
-                }
-                max={Math.max(100000, ...routes.map(r => r.price || 0))}
-                min={Math.min(0, ...routes.map(r => r.price || 0))}
+                value={tempPriceRange}
+                onValueChange={handlePriceRangeChange}
+                onValueCommit={handlePriceRangeCommit}
+                max={Math.max(100000, ...safeArray(routes).map(r => safeNumber(r.price, 0)))}
+                min={Math.min(0, ...safeArray(routes).map(r => safeNumber(r.price, 0)))}
                 step={500}
                 className="w-full"
               />
               <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                <span>{filters.minPrice.toLocaleString()}</span>
-                <span>{filters.maxPrice.toLocaleString()}</span>
+                <span>{tempPriceRange[0].toLocaleString()}</span>
+                <span>{tempPriceRange[1].toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -332,7 +410,7 @@ const SearchResultsPage = () => {
           <div className="space-y-3">
             <Label className="text-base font-medium">Bus Type</Label>
             <div className="space-y-2">
-              {busTypes.map(type => (
+              {safeArray(busTypes).map(type => (
                 <div key={type} className="flex items-center space-x-2">
                   <Checkbox
                     id={`bustype-${type}`}
@@ -361,7 +439,7 @@ const SearchResultsPage = () => {
           <div className="space-y-3">
             <Label className="text-base font-medium">Amenities</Label>
             <div className="space-y-2">
-              {amenitiesOptions.map(amenity => (
+              {safeArray(amenitiesOptions).map(amenity => (
                 <div key={amenity} className="flex items-center space-x-2">
                   <Checkbox
                     id={`amenity-${amenity}`}
@@ -393,7 +471,7 @@ const SearchResultsPage = () => {
           <div className="space-y-3">
             <Label className="text-base font-medium">Travel Agency</Label>
             <div className="space-y-2">
-              {agencies.map(agency => (
+              {safeArray(agencies).map(agency => (
                 <div key={agency.id} className="flex items-center space-x-2">
                   <Checkbox
                     id={`agency-${agency.id}`}
@@ -431,7 +509,7 @@ const SearchResultsPage = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {timeRanges.map(range => (
+                {safeArray(timeRanges).map(range => (
                   <SelectItem key={range.value} value={range.value}>
                     {range.label}
                   </SelectItem>
@@ -444,15 +522,25 @@ const SearchResultsPage = () => {
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => setFilters({
-              minPrice: Math.min(0, ...routes.map(r => r.price || 0)),
-              maxPrice: Math.max(100000, ...routes.map(r => r.price || 0)),
-              busTypes: [],
-              amenities: [],
-              agencies: [],
-              departureTimeRange: "all",
-              searchQuery: "",
-            })}
+            onClick={() => {
+              const prices = safeArray(routes).map(r => safeNumber(r.price, 0));
+              const minPrice = Math.min(...prices);
+              const maxPrice = Math.max(...prices);
+              
+              setFilters({
+                minPrice: isFinite(minPrice) ? minPrice : 0,
+                maxPrice: isFinite(maxPrice) ? maxPrice : 100000,
+                busTypes: [],
+                amenities: [],
+                agencies: [],
+                departureTimeRange: "all",
+                searchQuery: "",
+              });
+              setTempPriceRange([
+                isFinite(minPrice) ? minPrice : 0,
+                isFinite(maxPrice) ? maxPrice : 100000
+              ]);
+            }}
           >
             Clear All Filters
           </Button>
@@ -485,6 +573,15 @@ const SearchResultsPage = () => {
       />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         {/* Search Header */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
@@ -494,7 +591,7 @@ const SearchResultsPage = () => {
               </h1>
               <p className="text-muted-foreground">
                 {hasSearched && date && `Departure: ${new Date(date).toLocaleDateString()}`}
-                {!isLoading && ` • ${filteredAndSortedRoutes.length} routes found`}
+                {!isLoading && ` • ${safeArray(filteredAndSortedRoutes).length} routes found`}
               </p>
             </div>
             
@@ -554,26 +651,21 @@ const SearchResultsPage = () => {
 
         {/* Results */}
         {isLoading ? (
-          <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <Card key={i}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <Card key={i} className="h-full">
                 <CardContent className="p-6">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2 flex-1">
-                      <Skeleton className="h-6 w-48" />
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-4 w-64" />
-                    </div>
-                    <div className="text-right space-y-2">
-                      <Skeleton className="h-6 w-24" />
-                      <Skeleton className="h-10 w-32" />
-                    </div>
+                  <div className="space-y-4">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-10 w-full mt-4" />
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
-        ) : filteredAndSortedRoutes.length === 0 ? (
+        ) : safeArray(filteredAndSortedRoutes).length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
               <Bus className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -606,95 +698,87 @@ const SearchResultsPage = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
-            {filteredAndSortedRoutes.map((route, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {safeArray(filteredAndSortedRoutes).map((route, index) => (
               <motion.div
-                key={route.id}
+                key={route?.id || index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
+                className="h-full"
               >
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                      {/* Route Info */}
-                      <div className="flex-1 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold">
-                            {route.travelAgency?.name || getAgencyName(route.agencyId || "")}
-                          </h3>
-                          <Badge variant="secondary">{route.busType || "Standard"}</Badge>
-                        </div>
-                        
-                        <div className="flex items-center gap-6 text-sm">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span>{route.origin || "Unknown"}</span>
-                          </div>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span>{route.destination || "Unknown"}</span>
-                          </div>
-                        </div>
+                <Card className="h-full hover:shadow-lg transition-shadow flex flex-col">
+                  <CardContent className="p-6 flex-1 flex flex-col">
+                    {/* Agency and Bus Type */}
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold line-clamp-1">
+                        {route?.travelAgency?.name || getAgencyName(route?.agencyId)}
+                      </h3>
+                      <Badge variant="secondary" className="flex-shrink-0">
+                        {safeString(route?.busType)}
+                      </Badge>
+                    </div>
+                    
+                    {/* Route */}
+                    <div className="flex items-center gap-2 text-sm mb-4">
+                      <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <span className="font-medium">{safeString(route?.origin)}</span>
+                      <ArrowRight className="h-3 w-3 text-muted-foreground mx-1 flex-shrink-0" />
+                      <span className="font-medium">{safeString(route?.destination)}</span>
+                    </div>
 
-                        <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            <span>
-                              {route.departureTime && route.departureTime.includes("T") 
-                                ? new Date(route.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                                : route.departureTime || "N/A"
-                              } - {route.arrivalTime && route.arrivalTime.includes("T") 
-                                ? new Date(route.arrivalTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                                : route.arrivalTime || "N/A"
-                              }
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span>{route.duration || "N/A"}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4" />
-                            <span>{route.availableSeats || 0} seats available</span>
-                          </div>
-                        </div>
-
-                        {/* Amenities */}
-                        <div className="flex flex-wrap gap-2">
-                          {(route.amenities || ["wifi","meals","charging ports"]).slice(0, 4).map(amenity => (
-                            <Badge key={amenity} variant="outline" className="text-xs">
-                              <span className="mr-1">{getAmenityIcon(amenity)}</span>
-                              {amenity}
-                            </Badge>
-                          ))}
-                          {(route.amenities || []).length > 4 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{(route.amenities || []).length - 4} more
-                            </Badge>
-                          )}
-                        </div>
+                    {/* Schedule */}
+                    <div className="space-y-2 text-sm text-muted-foreground mb-4">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 flex-shrink-0" />
+                        <span>
+                          {formatTime(safeString(route?.departureTime))} - {formatTime(safeString(route?.arrivalTime))}
+                        </span>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 flex-shrink-0" />
+                        <span>{safeString(route?.duration) || "N/A"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 flex-shrink-0" />
+                        <span>{safeNumber(route?.availableSeats, 0)} seats available</span>
+                      </div>
+                    </div>
 
-                      {/* Price and Book */}
-                      <div className="lg:text-right space-y-3">
+                    {/* Amenities */}
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {safeArray(route?.amenities).slice(0, 3).map((amenity, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">
+                          <span className="mr-1">{getAmenityIcon(amenity)}</span>
+                          {amenity}
+                        </Badge>
+                      ))}
+                      {safeArray(route?.amenities).length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{safeArray(route?.amenities).length - 3}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Price and Book Button */}
+                    <div className="mt-auto pt-4 border-t">
+                      <div className="flex items-center justify-between mb-3">
                         <div>
-                          <div className="text-2xl font-bold text-primary">
-                            {(route.price || 0).toLocaleString()} FCFA
+                          <div className="text-xl font-bold text-primary">
+                            {safeNumber(route?.price, 0).toLocaleString()} FCFA
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-xs text-muted-foreground">
                             per person
                           </div>
                         </div>
-                        
-                        <Button asChild className="w-full lg:w-auto">
-                          <Link to={`/booking/${route.id}`}>
-                            Book Now
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
                       </div>
+                      
+                      <Button asChild className="w-full">
+                        <Link to={`/booking/${route?.id}`}>
+                          Book Now
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

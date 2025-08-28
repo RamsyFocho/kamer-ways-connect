@@ -22,27 +22,32 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-// import {mockAgencies} from "@/lib/mock-data.ts";
-import {getAgencies} from "@/lib/api-client.ts";
+import { getAgencies } from "@/lib/api-client.ts";
 import SEO from "@/components/Seo";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import HeroSection from "@/components/Hero/HeroSection";
 
 const Index = () => {
-  
   const { t } = useLanguage();
   const [agencies, setAgencies] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAgencies = async () => {
       try {
         const data = await getAgencies();
-        setAgencies(data);
-      } catch (error) {
-        console.error("Error fetching agencies:", error);
+        if (Array.isArray(data)) {
+          setAgencies(data);
+        } else {
+          setAgencies([]);
+          setError("Invalid data format received.");
+        }
+      } catch (err) {
+        console.error("Error fetching agencies:", err);
+        setError("Failed to load agencies. Please try again later.");
       } finally {
         setIsLoading(false);
       }
@@ -51,11 +56,16 @@ const Index = () => {
     fetchAgencies();
   }, []);
 
-  const filteredAgencies = agencies.filter(
-    (agency) =>
-      agency.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agency.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredAgencies = Array.isArray(agencies)
+    ? agencies.filter((agency) => {
+        const name = agency?.name?.toLowerCase() || "";
+        const description = agency?.description?.toLowerCase() || "";
+        return (
+          name.includes(searchQuery.toLowerCase()) ||
+          description.includes(searchQuery.toLowerCase())
+        );
+      })
+    : [];
 
   const stats = [
     { icon: Bus, label: "Active Buses", value: "200+" },
@@ -193,14 +203,15 @@ const Index = () => {
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-5/6 " />
               <Skeleton className="h-6 w-2/3" />
-              {/* <div className="text-lg">{t("common.loading")}</div> */}
             </div>
+          ) : error ? (
+            <div className="text-center py-12 text-destructive">{error}</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ">
               {filteredAgencies.length > 0 ? (
                 filteredAgencies.map((agency, index) => (
                   <motion.div
-                    key={agency.id}
+                    key={agency?.id || index}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -213,15 +224,15 @@ const Index = () => {
                           </div>
                           <div>
                             <CardTitle className="text-lg">
-                              {agency.name}
+                              {agency?.name || "Unknown Agency"}
                             </CardTitle>
                             <div className="flex items-center space-x-1">
                               <Star className="h-4 w-4 fill-warning text-warning" />
                               <span className="text-sm font-medium">
-                                {agency.rating || 4.8}
+                                {agency?.rating || 4.5}
                               </span>
                               <span className="text-sm text-muted-foreground">
-                                ({agency.reviewCount} {t("agencies.reviews")})
+                                ({agency?.reviewCount || 0} {t("agencies.reviews")})
                               </span>
                             </div>
                           </div>
@@ -229,7 +240,7 @@ const Index = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <CardDescription className="line-clamp-2">
-                          {agency.description ||
+                          {agency?.description ||
                             "Premium bus services connecting major cities across Cameroon with luxury and comfort."}
                         </CardDescription>
 
@@ -239,7 +250,7 @@ const Index = () => {
                               {t("agencies.established")}:
                             </span>
                             <span className="font-medium">
-                              {agency.established || 2010}
+                              {agency?.established || "N/A"}
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -247,25 +258,20 @@ const Index = () => {
                               {t("agencies.fleetSize")}:
                             </span>
                             <span className="font-medium">
-                              {agency.fleetSize || 26} {t("agencies.buses")}
+                              {agency?.fleetSize || 0} {t("agencies.buses")}
                             </span>
                           </div>
                         </div>
 
                         <div className="flex flex-wrap gap-1">
-                          {(
-                            agency.features || [
-                              "WiFi",
-                              "AC",
-                              "Meals",
-                              "Charging Ports",
-                              "Rest Stops",
-                            ]
+                          {(Array.isArray(agency?.features)
+                            ? agency.features
+                            : ["WiFi", "AC", "Charging Ports"]
                           )
                             .slice(0, 3)
-                            .map((feature) => (
+                            .map((feature, i) => (
                               <Badge
-                                key={feature}
+                                key={feature + i}
                                 variant="secondary"
                                 className="text-xs"
                               >
@@ -275,7 +281,7 @@ const Index = () => {
                         </div>
 
                         <Button className="w-full group" asChild>
-                          <Link to={`/agencies/${agency.id}`}>
+                          <Link to={`/agencies/${agency?.id || ""}`}>
                             {t("home.bookNow")}
                             <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                           </Link>

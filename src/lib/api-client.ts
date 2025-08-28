@@ -164,7 +164,8 @@ export const createBooking = async (booking: any) => {
     }
     return await response.json();
   } catch (error) {
-    return handleApiError(error, "booking");
+    handleApiError(error, "booking");
+    throw error;
   }
 };
 
@@ -174,7 +175,7 @@ export const getAllBookings = async () => {
     if (!response.ok) {
       const error: any = new Error(`HTTP error! Status: ${response.status}`);
       error.response = { status: response.status };
-      throw error;
+      return handleApiError(error);
     }
     return await response.json();
   } catch (error) {
@@ -203,7 +204,7 @@ export const updateBookingStatus = async (
           busNumber: busNumber,
           departureTime: departureTime,
           numberOfSeats: numberOfSeats,
-        }),
+        })
       }
     );
     if (!response.ok) {
@@ -212,6 +213,23 @@ export const updateBookingStatus = async (
       throw error;
     }
     return await response.json();
+  } catch (error) {
+     handleApiError(error, `booking with id ${id}`);
+     return error;
+  }
+};
+
+export const deleteBooking = async (id: string) => {
+  try {
+    const response = await fetch(`${backendUrl}/api/reservations/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      const error: any = new Error(`HTTP error! Status: ${response.status}`);
+      error.response = { status: response.status };
+      throw error;
+    }
+    return { success: true };
   } catch (error) {
     return handleApiError(error, `booking with id ${id}`);
   }
