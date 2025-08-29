@@ -4,29 +4,46 @@ import { CircularTestimonials } from '@/components/ui/circular-testimonials';
 const testimonials = [
   {
     quote:
-      "I was impressed by the food! And I could really tell that they use high-quality ingredients. The staff was friendly and attentive. I'll definitely be back for more!",
+      "Booking my trip was so easy and fast! The platform is very intuitive, and I loved how I could instantly see available seats and routes. Traveling has never been this stress-free.",
     name: "Tamar Mendelson",
-    designation: "Restaurant Critic",
+    designation: "Frequent Traveler",
     src:
       "https://images.unsplash.com/photo-1512316609839-ce289d3eba0a?q=80&w=1368&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     quote:
-      "This place exceeded all expectations! The atmosphere is inviting, and the staff truly goes above and beyond. I'll keep returning for more exceptional dining experience.",
+      "This system exceeded my expectations! I was able to book tickets for my whole family in minutes. The real-time updates on departure and arrival made the journey smooth and reliable.",
     name: "Joe Charlescraft",
-    designation: "Frequent Visitor",
+    designation: "Family Traveler",
     src:
       "https://images.unsplash.com/photo-1628749528992-f5702133b686?q=80&w=1368&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fA%3D%3D",
   },
   {
     quote:
-      "Shining Yam is a hidden gem! The impeccable service and overall attention to detail created a memorable experience. I highly recommend it!",
+      "Global Bush Quick Ride is a hidden gem! The seamless payment process, clear seat selection, and timely notifications made my journey super convenient. I highly recommend using this platform.",
     name: "Martina Edelweist",
     designation: "Satisfied Customer",
     src:
       "https://images.unsplash.com/photo-1524267213992-b76e8577d046?q=80&w=1368&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fA%3D%3D",
   },
+  {
+    quote:
+      "As an agency owner, Global Bush Quick Ride has transformed how we manage bookings. No more manual seat tracking — everything is automated, clear, and accessible in real-time. It saves us hours every day!",
+    name: "Samuel Nkwenti",
+    designation: "Agency Owner",
+    src:
+      "https://previews.123rf.com/images/wavebreakmediamicro/wavebreakmediamicro1606/wavebreakmediamicro160620766/59228731-portrait-of-smiling-bus-driver-showing-thumbs-up-in-front-of-bus.jpg",
+  },
+  {
+    quote:
+      "Driving has become less stressful since passengers book online. I get updated manifests instantly, and I know exactly how many people are boarding. It's efficient and well-organized.",
+    name: "Alice Fomum",
+    designation: "Bus Driver",
+    src:
+      "https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3",
+  },
 ];
+
 
 export const Testimonials = () => (
   <section>   
