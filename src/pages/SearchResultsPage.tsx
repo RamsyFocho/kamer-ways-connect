@@ -211,7 +211,7 @@ const SearchResultsPage = () => {
         return false;
       }
 
-      // Amenities filter
+      // Amenities filter - added null check for route.amenities
       if (filters.amenities.length > 0) {
         const routeAmenities = safeArray(route.amenities).map(a => safeString(a).toLowerCase());
         const hasAllAmenities = filters.amenities.every(amenity =>
@@ -220,7 +220,7 @@ const SearchResultsPage = () => {
         if (!hasAllAmenities) return false;
       }
 
-      // Agency filter
+      // Agency filter - added null checks for agencyId and travelAgency
       if (filters.agencies.length > 0) {
         const agencyId = safeString(route.agencyId);
         const travelAgencyId = safeString(route.travelAgency?.id?.toString());
