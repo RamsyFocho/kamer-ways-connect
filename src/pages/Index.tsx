@@ -27,6 +27,8 @@ import SEO from "@/components/Seo";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import HeroSection from "@/components/Hero/HeroSection";
+import { Testimonials } from "@/components/Testimonials";
+import FloatingActions from "@/components/FloatingActions";
 
 const Index = () => {
   const { t } = useLanguage();
@@ -334,6 +336,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      <Testimonials />
+      <FloatingActions />
     </div>
   );
 };
