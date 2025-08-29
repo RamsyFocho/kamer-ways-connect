@@ -11,19 +11,19 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Route } from "@/lib/mock-data";
 import { createBooking } from "@/lib/api-client";
-import { 
-  CheckCircle, 
-  XCircle, 
-  Bus, 
-  MapPin, 
-  Clock, 
-  Users, 
+import {
+  CheckCircle,
+  XCircle,
+  Bus,
+  MapPin,
+  Clock,
+  Users,
   Check,
   ArrowRight,
   Calendar,
   CreditCard,
   User,
-  Armchair
+  Armchair,
 } from "lucide-react";
 import {
   Select,
@@ -63,7 +63,7 @@ export default function BookingPage() {
     mobileNumber: "",
   });
   const selectedRoute = JSON.parse(localStorage.getItem("selectedRoute"));
-  console.log("selected route ",selectedRoute[0])
+  console.log("selected route ", selectedRoute[0]);
   const {
     data: route,
     isLoading: isRouteLoading,
@@ -85,7 +85,7 @@ export default function BookingPage() {
       queryClient.invalidateQueries({ queryKey: ["bookings"] }); // Invalidate bookings cache
     },
     onError: (error) => {
-      console.error("Error: ",error.message);
+      console.error("Error: ", error.message);
       toast({
         title: "Booking Failed",
         description: error.message || "An error occurred during booking.",
@@ -153,21 +153,23 @@ export default function BookingPage() {
         return;
       }
     }
-    // Add more validation for bank card if needed  
+    // Add more validation for bank card if needed
     const newBooking = {
       agencyId: route.travelAgency.id,
       fullName: bookingData.name,
       email: bookingData.email,
+      phoneNumber: bookingData.mobileNumber,
       idCardNumber: bookingData.idNumber,
-      startPoint : route.origin,
-      // origin : route.origin,
-      // destination : route.destination,
-      endPoint : route.destination,
-      paymentMethod:  bookingData.paymentMethod === "mobile_money" ? bookingData.mobileMoneyProvider : undefined,
+      startPoint: route.origin,
+      endPoint: route.destination,
+      paymentMethod:
+        bookingData.paymentMethod === "mobile_money"
+          ? bookingData.mobileMoneyProvider
+          : undefined,
       momoNumber: bookingData.mobileNumber,
-      numberOfSeats : bookingData.selectedSeats.length,
-      fleetType: "VIP", //not yet implemented
-      departurePeriod : "Night"  
+      numberOfSeats: bookingData.selectedSeats.length,
+      fleetType: "VIP",
+      departurePeriod: "Night",
     };
     console.log(newBooking);
     createBookingMutation.mutate(newBooking);
@@ -202,11 +204,36 @@ export default function BookingPage() {
   // Step indicator component
   const StepIndicator = () => {
     const steps = [
-      { number: 1, title: "Passenger Info", icon: User, description: "Enter your details" },
-      { number: 2, title: "Route Details", icon: Bus, description: "Confirm your journey" },
-      { number: 3, title: "Select Seats", icon: Armchair, description: "Choose your seats" },
-      { number: 4, title: "Payment", icon: CreditCard, description: "Complete payment" },
-      { number: 5, title: "Confirmation", icon: CheckCircle, description: "Booking complete" }
+      {
+        number: 1,
+        title: "Passenger Info",
+        icon: User,
+        description: "Enter your details",
+      },
+      {
+        number: 2,
+        title: "Route Details",
+        icon: Bus,
+        description: "Confirm your journey",
+      },
+      {
+        number: 3,
+        title: "Select Seats",
+        icon: Armchair,
+        description: "Choose your seats",
+      },
+      {
+        number: 4,
+        title: "Payment",
+        icon: CreditCard,
+        description: "Complete payment",
+      },
+      {
+        number: 5,
+        title: "Confirmation",
+        icon: CheckCircle,
+        description: "Booking complete",
+      },
     ];
 
     return (
@@ -214,25 +241,42 @@ export default function BookingPage() {
         <div className="flex items-center justify-between relative">
           {/* Progress line */}
           <div className="absolute top-6 left-0 right-0 h-0.5 bg-muted -z-10">
-            <div 
+            <div
               className="h-full bg-primary transition-all duration-500 ease-in-out"
               style={{ width: `${((step - 1) / (steps.length - 1)) * 100}%` }}
             />
           </div>
-          
+
           {steps.map((stepItem, index) => {
             const isCompleted = step > stepItem.number;
             const isCurrent = step === stepItem.number;
             const isUpcoming = step < stepItem.number;
-            
+
             return (
-              <div key={stepItem.number} className="flex flex-col items-center relative">
-                <div className={`
+              <div
+                key={stepItem.number}
+                className="flex flex-col items-center relative"
+              >
+                <div
+                  className={`
                   w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300
-                  ${isCompleted ? 'bg-primary border-primary text-primary-foreground' : ''}
-                  ${isCurrent ? 'bg-primary border-primary text-primary-foreground shadow-lg scale-110' : ''}
-                  ${isUpcoming ? 'bg-background border-muted-foreground/30 text-muted-foreground' : ''}
-                `}>
+                  ${
+                    isCompleted
+                      ? "bg-primary border-primary text-primary-foreground"
+                      : ""
+                  }
+                  ${
+                    isCurrent
+                      ? "bg-primary border-primary text-primary-foreground shadow-lg scale-110"
+                      : ""
+                  }
+                  ${
+                    isUpcoming
+                      ? "bg-background border-muted-foreground/30 text-muted-foreground"
+                      : ""
+                  }
+                `}
+                >
                   {isCompleted ? (
                     <Check className="w-5 h-5" />
                   ) : (
@@ -240,7 +284,11 @@ export default function BookingPage() {
                   )}
                 </div>
                 <div className="mt-2 text-center hidden sm:block">
-                  <div className={`text-sm font-medium ${isCurrent ? 'text-primary' : 'text-muted-foreground'}`}>
+                  <div
+                    className={`text-sm font-medium ${
+                      isCurrent ? "text-primary" : "text-muted-foreground"
+                    }`}
+                  >
                     {stepItem.title}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
@@ -257,8 +305,10 @@ export default function BookingPage() {
 
   // Booking summary component
   const BookingSummary = () => {
-    const totalAmount = route ? route.price * bookingData.selectedSeats.length : 0;
-    
+    const totalAmount = route
+      ? route.price * bookingData.selectedSeats.length
+      : 0;
+
     return (
       <Card className="sticky top-4">
         <CardHeader>
@@ -281,21 +331,25 @@ export default function BookingPage() {
                 <div className="font-medium text-sm">{route?.destination}</div>
               </div>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm">Date</span>
               </div>
-              <span className="text-sm font-medium">{route?.date || 'Today'}</span>
+              <span className="text-sm font-medium">
+                {route?.date || "Today"}
+              </span>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm">Departure</span>
               </div>
-              <span className="text-sm font-medium">{route?.departureTime}</span>
+              <span className="text-sm font-medium">
+                {route?.departureTime}
+              </span>
             </div>
           </div>
 
@@ -330,10 +384,11 @@ export default function BookingPage() {
                 <h4 className="font-medium text-sm">Seat Selection</h4>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
-                    {bookingData.selectedSeats.length} seat{bookingData.selectedSeats.length > 1 ? 's' : ''}
+                    {bookingData.selectedSeats.length} seat
+                    {bookingData.selectedSeats.length > 1 ? "s" : ""}
                   </span>
                   <Badge variant="secondary">
-                    {bookingData.selectedSeats.join(', ')}
+                    {bookingData.selectedSeats.join(", ")}
                   </Badge>
                 </div>
               </div>
@@ -348,15 +403,19 @@ export default function BookingPage() {
                 <h4 className="font-medium text-sm">Payment Method</h4>
                 <div className="text-sm">
                   <Badge variant="outline">
-                    {bookingData.paymentMethod === 'mobile_money' ? 'Mobile Money' : 
-                     bookingData.paymentMethod === 'bank_card' ? 'Bank Card' : 
-                     bookingData.paymentMethod}
+                    {bookingData.paymentMethod === "mobile_money"
+                      ? "Mobile Money"
+                      : bookingData.paymentMethod === "bank_card"
+                      ? "Bank Card"
+                      : bookingData.paymentMethod}
                   </Badge>
-                  {bookingData.paymentMethod === 'mobile_money' && bookingData.mobileMoneyProvider && (
-                    <div className="mt-1 text-muted-foreground">
-                      {bookingData.mobileMoneyProvider} - {bookingData.mobileNumber}
-                    </div>
-                  )}
+                  {bookingData.paymentMethod === "mobile_money" &&
+                    bookingData.mobileMoneyProvider && (
+                      <div className="mt-1 text-muted-foreground">
+                        {bookingData.mobileMoneyProvider} -{" "}
+                        {bookingData.mobileNumber}
+                      </div>
+                    )}
                 </div>
               </div>
             </>
@@ -372,7 +431,13 @@ export default function BookingPage() {
                 <span className="text-muted-foreground">
                   Ticket price × {bookingData.selectedSeats.length || 1}
                 </span>
-                <span>{((route?.price || 0) * (bookingData.selectedSeats.length || 1)).toLocaleString()} FCFA</span>
+                <span>
+                  {(
+                    (route?.price || 0) *
+                    (bookingData.selectedSeats.length || 1)
+                  ).toLocaleString()}{" "}
+                  FCFA
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Service fee</span>
@@ -381,7 +446,9 @@ export default function BookingPage() {
               <Separator />
               <div className="flex justify-between font-bold text-lg">
                 <span>Total</span>
-                <span className="text-primary">{totalAmount.toLocaleString()} FCFA</span>
+                <span className="text-primary">
+                  {totalAmount.toLocaleString()} FCFA
+                </span>
               </div>
             </div>
           </div>
@@ -397,13 +464,17 @@ export default function BookingPage() {
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">Passenger Information</h2>
-              <p className="text-muted-foreground">Please provide your personal details for the booking.</p>
+              <p className="text-muted-foreground">
+                Please provide your personal details for the booking.
+              </p>
             </div>
-            
+
             <form onSubmit={handlePassengerSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium">Full Name *</Label>
+                  <Label htmlFor="name" className="text-sm font-medium">
+                    Full Name *
+                  </Label>
                   <Input
                     id="name"
                     placeholder="Enter your full name"
@@ -416,7 +487,9 @@ export default function BookingPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">Email Address *</Label>
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    Email Address *
+                  </Label>
                   <Input
                     id="email"
                     type="email"
@@ -433,26 +506,36 @@ export default function BookingPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm font-medium">Phone Number *</Label>
+                  <Label htmlFor="phone" className="text-sm font-medium">
+                    Phone Number *
+                  </Label>
                   <Input
                     id="phone"
                     placeholder="Enter your phone number"
                     value={bookingData.mobileNumber}
                     onChange={(e) =>
-                      setBookingData({ ...bookingData, mobileNumber: e.target.value })
+                      setBookingData({
+                        ...bookingData,
+                        mobileNumber: e.target.value,
+                      })
                     }
                     className="h-11"
                     required
                   />
                 </div>
-               <div className="space-y-2">
-                  <Label htmlFor="idNumber" className="text-sm font-medium">ID Number *</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="idNumber" className="text-sm font-medium">
+                    ID Number *
+                  </Label>
                   <Input
                     id="idNumber"
                     placeholder="Enter your ID number"
                     value={bookingData.idNumber}
                     onChange={(e) =>
-                      setBookingData({ ...bookingData, idNumber: e.target.value })
+                      setBookingData({
+                        ...bookingData,
+                        idNumber: e.target.value,
+                      })
                     }
                     className="h-11"
                     required
@@ -474,9 +557,11 @@ export default function BookingPage() {
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">Confirm Route Details</h2>
-              <p className="text-muted-foreground">Please review your selected journey details.</p>
+              <p className="text-muted-foreground">
+                Please review your selected journey details.
+              </p>
             </div>
-            
+
             <Card className="border-2">
               <CardContent className="p-6">
                 <div className="space-y-4">
@@ -487,58 +572,85 @@ export default function BookingPage() {
                       </div>
                       <div>
                         <div className="font-semibold">{route.origin}</div>
-                        <div className="text-sm text-muted-foreground">Departure</div>
+                        <div className="text-sm text-muted-foreground">
+                          Departure
+                        </div>
                       </div>
                     </div>
                     <ArrowRight className="w-6 h-6 text-muted-foreground" />
                     <div className="flex items-center gap-3">
                       <div>
-                        <div className="font-semibold text-right">{route.destination}</div>
-                        <div className="text-sm text-muted-foreground text-right">Arrival</div>
+                        <div className="font-semibold text-right">
+                          {route.destination}
+                        </div>
+                        <div className="text-sm text-muted-foreground text-right">
+                          Arrival
+                        </div>
                       </div>
                       <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                         <MapPin className="w-5 h-5 text-primary" />
                       </div>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center">
                       <Clock className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-                      <div className="text-sm text-muted-foreground">Departure</div>
+                      <div className="text-sm text-muted-foreground">
+                        Departure
+                      </div>
                       <div className="font-semibold">{route.departureTime}</div>
                     </div>
                     <div className="text-center">
                       <Clock className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-                      <div className="text-sm text-muted-foreground">Arrival</div>
+                      <div className="text-sm text-muted-foreground">
+                        Arrival
+                      </div>
                       <div className="font-semibold">{route.arrivalTime}</div>
                     </div>
                     <div className="text-center">
                       <Bus className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-                      <div className="text-sm text-muted-foreground">Bus Type</div>
-                      <div className="font-semibold">{route.busType || "Classic"}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Bus Type
+                      </div>
+                      <div className="font-semibold">
+                        {route.busType || "Classic"}
+                      </div>
                     </div>
                     <div className="text-center">
                       <Users className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-                      <div className="text-sm text-muted-foreground">Available</div>
-                      <div className="font-semibold">{route.availableSeats || 45} seats</div>
+                      <div className="text-sm text-muted-foreground">
+                        Available
+                      </div>
+                      <div className="font-semibold">
+                        {route.availableSeats || 45} seats
+                      </div>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="text-center">
-                    <div className="text-sm text-muted-foreground mb-1">Price per seat</div>
-                    <div className="text-3xl font-bold text-primary">{route.price.toLocaleString()} FCFA</div>
+                    <div className="text-sm text-muted-foreground mb-1">
+                      Price per seat
+                    </div>
+                    <div className="text-3xl font-bold text-primary">
+                      {route.price.toLocaleString()} FCFA
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
-            
+
             <div className="flex justify-between pt-6">
-              <Button variant="outline" onClick={handleBack} size="lg" className="px-8">
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                size="lg"
+                className="px-8"
+              >
                 Back to Passenger Info
               </Button>
               <Button onClick={handleNext} size="lg" className="px-8">
@@ -549,14 +661,20 @@ export default function BookingPage() {
           </div>
         );
       case 3: {
-        const maxSeats = route.availableSeats == null ? 45 : route.availableSeats;
-        const seatOptions = Array.from({ length: Math.min(maxSeats, 10) }, (_, i) => i + 1);
+        const maxSeats =
+          route.availableSeats == null ? 45 : route.availableSeats;
+        const seatOptions = Array.from(
+          { length: Math.min(maxSeats, 10) },
+          (_, i) => i + 1
+        );
 
         return (
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">Select Your Seats</h2>
-              <p className="text-muted-foreground">Choose the number of seats you'd like to book for your journey.</p>
+              <p className="text-muted-foreground">
+                Choose the number of seats you'd like to book for your journey.
+              </p>
             </div>
 
             <Card className="border-2">
@@ -566,13 +684,19 @@ export default function BookingPage() {
                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Armchair className="w-8 h-8 text-primary" />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">How many seats do you need?</h3>
-                    <p className="text-muted-foreground">Select the number of passengers traveling</p>
+                    <h3 className="text-lg font-semibold mb-2">
+                      How many seats do you need?
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Select the number of passengers traveling
+                    </p>
                   </div>
 
                   <div className="max-w-sm mx-auto space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="numSeats" className="text-sm font-medium">Number of Seats</Label>
+                      <Label htmlFor="numSeats" className="text-sm font-medium">
+                        Number of Seats
+                      </Label>
                       <Select
                         value={
                           bookingData.selectedSeats.length
@@ -590,7 +714,10 @@ export default function BookingPage() {
                           }));
                         }}
                       >
-                        <SelectTrigger id="numSeats" className="h-12 text-center">
+                        <SelectTrigger
+                          id="numSeats"
+                          className="h-12 text-center"
+                        >
                           <SelectValue placeholder="Select number of seats..." />
                         </SelectTrigger>
                         <SelectContent>
@@ -598,25 +725,34 @@ export default function BookingPage() {
                             <SelectItem key={num} value={String(num)}>
                               <div className="flex items-center gap-2">
                                 <Armchair className="w-4 h-4" />
-                                {num} seat{num > 1 ? "s" : ""} - {(route.price * num).toLocaleString()} FCFA
+                                {num} seat{num > 1 ? "s" : ""} -{" "}
+                                {(route.price * num).toLocaleString()} FCFA
                               </div>
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     {bookingData.selectedSeats.length > 0 && (
                       <div className="text-center p-4 bg-primary/5 rounded-lg">
-                        <div className="text-sm text-muted-foreground mb-1">Total for {bookingData.selectedSeats.length} seat{bookingData.selectedSeats.length > 1 ? 's' : ''}</div>
+                        <div className="text-sm text-muted-foreground mb-1">
+                          Total for {bookingData.selectedSeats.length} seat
+                          {bookingData.selectedSeats.length > 1 ? "s" : ""}
+                        </div>
                         <div className="text-2xl font-bold text-primary">
-                          {(route.price * bookingData.selectedSeats.length).toLocaleString()} FCFA
+                          {(
+                            route.price * bookingData.selectedSeats.length
+                          ).toLocaleString()}{" "}
+                          FCFA
                         </div>
                       </div>
                     )}
-                    
+
                     <p className="text-xs text-muted-foreground text-center">
-                      Maximum {Math.min(maxSeats, 10)} seat{Math.min(maxSeats, 10) > 1 ? "s" : ""} can be booked at once
+                      Maximum {Math.min(maxSeats, 10)} seat
+                      {Math.min(maxSeats, 10) > 1 ? "s" : ""} can be booked at
+                      once
                     </p>
                   </div>
                 </div>
@@ -624,7 +760,12 @@ export default function BookingPage() {
             </Card>
 
             <div className="flex justify-between pt-6">
-              <Button variant="outline" onClick={handleBack} size="lg" className="px-8">
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                size="lg"
+                className="px-8"
+              >
                 Back to Route Details
               </Button>
               <Button
@@ -645,9 +786,11 @@ export default function BookingPage() {
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">Payment Information</h2>
-              <p className="text-muted-foreground">Choose your preferred payment method to complete the booking.</p>
+              <p className="text-muted-foreground">
+                Choose your preferred payment method to complete the booking.
+              </p>
             </div>
-            
+
             <PaymentOptions
               selectedPaymentMethod={bookingData.paymentMethod}
               setSelectedPaymentMethod={(method) =>
@@ -666,9 +809,14 @@ export default function BookingPage() {
               }
               totalAmount={route.price * bookingData.selectedSeats.length}
             />
-            
+
             <div className="flex justify-between pt-6">
-              <Button variant="outline" onClick={handleBack} size="lg" className="px-8">
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                size="lg"
+                className="px-8"
+              >
                 Back to Seat Selection
               </Button>
               <Button
@@ -701,37 +849,70 @@ export default function BookingPage() {
                   <CheckCircle className="h-10 w-10 text-green-600" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold text-green-600 mb-2">Booking Confirmed!</h2>
+                  <h2 className="text-3xl font-bold text-green-600 mb-2">
+                    Booking Confirmed!
+                  </h2>
                   <p className="text-muted-foreground text-lg">
-                    Your bus ticket has been successfully booked. A confirmation email has been sent to your inbox.
+                    Your bus ticket has been successfully booked. A confirmation
+                    email has been sent to your inbox.
                   </p>
                 </div>
-                
+
                 <Card className="max-w-md mx-auto">
                   <CardContent className="p-6">
                     <div className="space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Booking ID:</span>
-                        <span className="font-mono font-semibold">#BK{Date.now().toString().slice(-6)}</span>
+                        <span className="text-muted-foreground">
+                          Booking ID:
+                        </span>
+                        <span className="font-mono font-semibold">
+                          #BK{Date.now().toString().slice(-6)}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Passenger:</span>
-                        <span className="font-semibold">{bookingData.name}</span>
+                        <span className="text-muted-foreground">
+                          Passenger:
+                        </span>
+                        <span className="font-semibold">
+                          {bookingData.name}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Seats:</span>
-                        <span className="font-semibold">{bookingData.selectedSeats.length}</span>
+                        <span className="font-semibold">
+                          {bookingData.selectedSeats.length}
+                        </span>
                       </div>
                       <Separator />
                       <div className="flex justify-between text-lg">
                         <span className="font-semibold">Total Paid:</span>
                         <span className="font-bold text-primary">
-                          {(route.price * bookingData.selectedSeats.length).toLocaleString()} FCFA
+                          {(
+                            route.price * bookingData.selectedSeats.length
+                          ).toLocaleString()}{" "}
+                          FCFA
                         </span>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
+              </>
+            )}
+
+            {createBookingMutation.isError && (
+              <>
+                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+                  <XCircle className="h-10 w-10 text-red-600" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-red-600 mb-2">
+                    Booking Failed
+                  </h2>
+                  <p className="text-muted-foreground text-lg">
+                    {createBookingMutation.error?.message ||
+                      "An unexpected error occurred while processing your booking."}
+                  </p>
+                </div>
               </>
             )}
             {createBookingMutation.isError && (
@@ -740,9 +921,12 @@ export default function BookingPage() {
                   <XCircle className="h-10 w-10 text-red-600" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold text-red-600 mb-2">Booking Failed</h2>
+                  <h2 className="text-3xl font-bold text-red-600 mb-2">
+                    Booking Failed
+                  </h2>
                   <p className="text-muted-foreground text-lg">
-                    {createBookingMutation.error?.message || "An unexpected error occurred while processing your booking."}
+                    {createBookingMutation.error?.message ||
+                      "An unexpected error occurred while processing your booking."}
                   </p>
                 </div>
               </>
@@ -774,7 +958,7 @@ export default function BookingPage() {
           "KamerWays Connect",
         ]}
       />
-      
+
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
@@ -793,9 +977,7 @@ export default function BookingPage() {
             {/* Main Form Content */}
             <div className="lg:col-span-2">
               <Card className="shadow-lg">
-                <CardContent className="p-8">
-                  {renderStepContent()}
-                </CardContent>
+                <CardContent className="p-8">{renderStepContent()}</CardContent>
               </Card>
             </div>
 
@@ -806,8 +988,6 @@ export default function BookingPage() {
           </div>
         </div>
       </div>
-      
-      
     </div>
   );
 }
