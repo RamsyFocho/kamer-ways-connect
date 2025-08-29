@@ -19,7 +19,7 @@ export default function Hero() {
   // ];
   const cameroonCities = [
     "Douala",
-    "Yaoundé",
+    "Yaounde",
     "Bamenda",
     "Bafoussam",
     "Garoua",
@@ -147,8 +147,8 @@ export default function Hero() {
   };
 
   const popularRoutes = [
-    { from: "Douala", to: "Yaoundé" },
-    { from: "Yaoundé", to: "Bamenda" },
+    { from: "Bafoussam", to: "Yaounde" },
+    { from: "Douala", to: "Limbe" },
     { from: "Douala", to: "Kribi" },
   ];
 

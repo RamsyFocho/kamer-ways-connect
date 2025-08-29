@@ -13,16 +13,22 @@ export function Footer() {
               <div className="p-2 bg-primary rounded-lg">
                 <Bus className="h-6 w-6 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold gradient-text">KamerWays</span>
+              <span className="text-xl font-bold gradient-text">GlobalBush Quick Ride</span>
             </Link>
             <p className="text-sm text-muted-foreground">
               Your trusted partner for comfortable and safe bus travel across Cameroon. 
               Connecting cities and communities with reliable transportation services.
             </p>
             <div className="flex space-x-4">
-              <Facebook className="h-5 w-5 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
-              <Twitter className="h-5 w-5 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
-              <Instagram className="h-5 w-5 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
+              <a href="https://www.facebook.com/globalbush" target="_blank" rel="noopener noreferrer">
+                <Facebook className="h-5 w-5 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
+              </a>
+              <a href="https://x.com/Globalbusht" target="_blank" rel="noopener noreferrer">
+                <Twitter className="h-5 w-5 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
+              </a>
+              <a href="https://www.instagram.com/globalbushtours/" target="_blank" rel="noopener noreferrer">
+                <Instagram className="h-5 w-5 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
+              </a>
             </div>
           </div>
 
@@ -62,16 +68,16 @@ export function Footer() {
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">+237 123 456 789</span>
+                <span className="text-sm text-muted-foreground">(+237) 677 24 66 24</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">info@kamerways.com</span>
+                <span className="text-sm text-muted-foreground">info@globalbushtratour.com</span>
               </div>
-              <div className="flex items-center space-x-2">
+              <a href="https://maps.app.goo.gl/hfrWwB66ozc5qv9b6" className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Douala, Cameroon</span>
-              </div>
+                <span className="text-sm text-muted-foreground">Douala Cameroun Carrefour Eto’o Bonamoussadi</span>
+              </a>
             </div>
           </div>
         </div>

@@ -57,7 +57,7 @@ export function Header() {
             <div className="p-2 bg-primary rounded-lg">
               <Bus className="h-6 w-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold gradient-text">KamerWays</span>
+            <span className="text-xl font-bold gradient-text">GlobalBush QuickRide</span>
           </Link>
 
           {/* Desktop Navigation */}
