@@ -29,6 +29,7 @@ import { motion } from "framer-motion";
 import HeroSection from "@/components/Hero/HeroSection";
 import { Testimonials } from "@/components/Testimonials";
 import FloatingActions from "@/components/FloatingActions";
+import StatsSection from "@/components/StatsSection";
 
 const Index = () => {
   const { t } = useLanguage();
@@ -69,13 +70,7 @@ const Index = () => {
       })
     : [];
 
-  const stats = [
-    { icon: Bus, label: "Active Buses", value: "200+" },
-    { icon: Users, label: "Happy Customers", value: "50K+" },
-    { icon: MapPin, label: "Cities Connected", value: "25+" },
-    { icon: Shield, label: "Safety Rating", value: "99.9%" },
-  ];
-
+  
   const features = [
     {
       icon: Wifi,
@@ -167,31 +162,7 @@ const Index = () => {
       <HeroSection />
 
       {/* Stats Section */}
-      <section className="py-16 bg-muted/50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                className="text-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-primary rounded-lg mb-4">
-                  <stat.icon className="h-6 w-6 text-primary-foreground" />
-                </div>
-                <div className="text-2xl font-bold text-primary mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {stat.label}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <StatsSection />
 
       {/* Featured Agencies */}
       <section className="py-20">
