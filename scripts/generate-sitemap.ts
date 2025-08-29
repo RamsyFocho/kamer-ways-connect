@@ -2,7 +2,7 @@ import fs from 'fs';
 import { mockAgencies, mockRoutes } from '../src/lib/mock-data';
 
 const generateSitemap = () => {
-  const baseUrl = 'https://kamer-ways-connect.com'; // Replace with your actual domain
+  const baseUrl = 'https://GlobalBush-Quick-Ride.com'; // Replace with your actual domain
   const pages = [
     '/',
     '/agencies',

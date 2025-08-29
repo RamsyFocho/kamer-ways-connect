@@ -1,4 +1,4 @@
-# KamerWays Connect - TODO & Progress Tracker
+# GlobalBush Quick Ride - TODO & Progress Tracker
 
 ## ✅ Completed
 - Role-based login redirection (admin → /admin, customer → /bookings)

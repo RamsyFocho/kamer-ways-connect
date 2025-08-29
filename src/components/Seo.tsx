@@ -30,7 +30,7 @@ const SEO: React.FC<SeoProps> = ({
 
   return (
     <Helmet>
-      <title>{title} | KamerWays Connect</title>
+      <title>{title} | GlobalBush Quick Ride</title>
       <meta name="description" content={description} />
       {keywordString && <meta name="keywords" content={keywordString} />}
       {author && <meta name="author" content={author} />}

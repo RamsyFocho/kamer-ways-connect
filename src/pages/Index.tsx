@@ -101,11 +101,15 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <SEO
         title="Book Bus Tickets Online in Cameroon"
-        description="Easily book bus tickets for travel across Cameroon. Compare prices from top agencies, and enjoy a seamless booking experience with KamerWays Connect."
+        description="Easily book bus tickets for travel across Cameroon. Compare prices from top agencies, and enjoy a seamless booking experience with GlobalBush QuickRide."
         keywords={[
           "bus travel Cameroon",
           "online bus booking",
           "KamerWays",
+          "GlobalBush",
+          "Global Bush",
+          "Quick Ride",
+          "GlobalBush QuickRide",
           "Douala to Yaounde",
           "bus tickets",
           "Bus",
@@ -127,12 +131,12 @@ const Index = () => {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebSite",
-            name: "KamerWays Connect",
-            url: "https://kamer-ways-connect.com",
+            name: "GlobalBush Quick Ride",
+            url: "https://GlobalBush-Quick-Ride",
             potentialAction: {
               "@type": "SearchAction",
               target:
-                "https://kamer-ways-connect.com/agencies?search={search_term_string}",
+                "https://GlobalBush-Quick-Ride/agencies?search={search_term_string}",
               "query-input": "required name=search_term_string",
             },
           }),
@@ -145,9 +149,9 @@ const Index = () => {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
-            name: "KamerWays Connect",
-            url: "https://kamer-ways-connect.com",
-            logo: "https://kamer-ways-connect.com/logo.png",
+            name: "GlobalBush Quick Ride",
+            url: "https://GlobalBush-Quick-Ride.com",
+            logo: "https://GlobalBush-Quick-Ride.com/logo.png",
             sameAs: [
               "https://www.facebook.com/kamerwaysconnect",
               "https://twitter.com/kamerwaysconnect",
