@@ -100,7 +100,7 @@ const StatsSection = () => {
           {stats.map((stat, index) => (
             <motion.div
               key={stat.label}
-              className="text-center group relative p-6 rounded-xl  backdrop-blur-sm border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300"
+              className="text-center group relative p-6 rounded-xl backdrop-blur-sm border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300"
               variants={itemVariants}
               whileHover={{ 
                 y: -5,
