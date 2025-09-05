@@ -616,7 +616,7 @@ export default function BookingPage() {
                         Bus Type
                       </div>
                       <div className="font-semibold">
-                        {route.busType || "Classic"}
+                        {route.fleetType || "Classic"}
                       </div>
                     </div>
                     <div className="text-center">
@@ -950,12 +950,12 @@ export default function BookingPage() {
     <div className="min-h-screen bg-muted/30">
       <SEO
         title="Complete Your Booking"
-        description="Enter your details to complete your bus ticket booking. Secure your seat for travel across Cameroon with KamerWays Connect."
+        description="Enter your details to complete your bus ticket booking. Secure your seat for travel across Cameroon with GlobalBush Connect."
         keywords={[
           "complete booking",
           "passenger details",
           "bus ticket payment",
-          "KamerWays Connect",
+          "GlobalBush Connect",
         ]}
       />
 

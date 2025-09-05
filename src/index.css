@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* KamerWays Bus Reservation System Design Tokens 
+/* GlobalBush Bus Reservation System Design Tokens 
 All colors MUST be HSL for proper theming.
 */
 
@@ -18,7 +18,7 @@ All colors MUST be HSL for proper theming.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* KamerWays Brand Primary - Indigo & Purple Mix */
+    /* GlobalBush Brand Primary - Indigo & Purple Mix */
     --primary: 263 93% 65%;
     --primary-foreground: 210 40% 98%;
     --primary-hover: 270 91% 55%;
@@ -47,7 +47,7 @@ All colors MUST be HSL for proper theming.
     /* Design System */
     --radius: 0.75rem;
 
-    /* KamerWays Specific */
+    /* GlobalBush Specific */
     --bus-accent: 270 91% 65%;
     --travel-secondary: 210 15% 85%;
     --premium-gold: 45 85% 65%;
@@ -118,7 +118,7 @@ All colors MUST be HSL for proper theming.
     --input: 217.2 32.6% 17.5%;
     --ring: 263 93% 75%;
 
-    /* Dark KamerWays Specific */
+    /* Dark GlobalBush Specific */
     --bus-accent: 270 91% 75%;
     --travel-secondary: 217.2 32.6% 25%;
     --premium-gold: 45 85% 75%;
@@ -172,7 +172,7 @@ All colors MUST be HSL for proper theming.
 }
 
 @layer components {
-  /* KamerWays utility classes */
+  /* GlobalBush utility classes */
   .gradient-text {
     background: var(--gradient-primary);
     -webkit-background-clip: text;

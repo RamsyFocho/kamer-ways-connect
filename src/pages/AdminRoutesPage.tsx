@@ -3,12 +3,19 @@ import AdminSidebar from "@/components/layout/AdminSidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { mockRoutes, Route, mockAgencies } from "@/lib/mock-data";
 import { AgencySelector } from "@/components/ui/AgencySelector";
 import { toast } from "sonner";
 import { Menu, FileText } from "lucide-react"; // Icon for mobile menu toggle
-
+import { getAgencies, createTrip } from "@/lib/api-client.ts";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 // Simulate API with local state for now
 const fetchRoutes = async (): Promise<Route[]> => {
@@ -16,7 +23,7 @@ const fetchRoutes = async (): Promise<Route[]> => {
   try {
     const response = await fetch(`${backendUrl}/api/viewAllTrips`);
     if (!response.ok) {
-      toast.error("Failed to fetch trips/routes:", error);      
+      toast.error("Failed to fetch trips/routes: "+ response.status);
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     const data = await response.json();
@@ -31,11 +38,7 @@ const fetchRoutes = async (): Promise<Route[]> => {
 
 const fetchAgencies = async () => {
   try {
-    const response = await fetch(`${backendUrl}/api/agencies`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await getAgencies();
     console.log("Fetched agencies:", data);
     return data;
   } catch (error) {
@@ -58,7 +61,7 @@ const AdminRoutesPage: React.FC = () => {
     arrivalTime: "",
     duration: "",
     price: 0,
-    busType: "",
+    fleetType: "",
     amenities: [],
     availableSeats: 0,
     totalSeats: 0,
@@ -80,32 +83,27 @@ const AdminRoutesPage: React.FC = () => {
   // Mutations
   const createMutation = useMutation({
     mutationFn: async (route: Omit<Route, "id">) => {
-      const res = await fetch(`${backendUrl}/api/createTrip`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          agencyId: route.agencyId,
-          origin: route.origin,
-          destination: route.destination,
-          departureTime: new Date(route.departureTime).toISOString(),
-          arrivalTime: new Date(route.arrivalTime).toISOString(),
-          price: route.price,
-        }),
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to create trip");
-      }
-      return res.json();
+      const sortedRoute = {
+        agencyId: route.agencyId,
+        origin: route.origin,
+        destination: route.destination,
+        fleetType: route.fleetType,
+        departureTime: new Date(route.departureTime).toISOString(),
+        arrivalTime: new Date(route.arrivalTime).toISOString(),
+        price: route.price,
+      };
+      const data = await createTrip(sortedRoute);
+      console.log("Created trip:", data);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["routes"] });
       toast.success("Route created successfully");
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to create route");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create route"
+      );
     },
   });
 
@@ -125,6 +123,23 @@ const AdminRoutesPage: React.FC = () => {
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
+    //------------ validations-------
+    if (newRoute.price <= 100) {
+      toast.error("Enter a Reasonable Bus Fare");
+      return;
+    }
+    if (newRoute.agencyId == null) {
+      toast.error("Select the Travel Agency");
+      return;
+    }
+    if (!newRoute.origin || !newRoute.destination || !newRoute.fleetType) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+    if (newRoute.departureTime >= newRoute.arrivalTime) {
+      toast.error("Arrival time must be after Departure time");
+      return;
+    }
     createMutation.mutate(newRoute);
     setNewRoute({
       agencyId: "",
@@ -134,7 +149,7 @@ const AdminRoutesPage: React.FC = () => {
       arrivalTime: "",
       duration: "",
       price: 0,
-      busType: "",
+      fleetType: "",
       amenities: [],
       availableSeats: 0,
       totalSeats: 0,
@@ -156,6 +171,7 @@ const AdminRoutesPage: React.FC = () => {
     }
   };
   const hasRoutes = Array.isArray(routes) && routes.length > 0;
+  const fleetOptions = ["Standard", "Business", "Luxury", "Economy", "VIP"];
 
   return (
     <div className="min-h-screen bg-background">
@@ -215,10 +231,34 @@ const AdminRoutesPage: React.FC = () => {
                     }
                     required
                   />
+                  <Select
+                    required
+                    value={newRoute.fleetType}
+                    onValueChange={(e) =>
+                      setNewRoute({ ...newRoute, fleetType: e })
+                    }
+                  >
+                    {/* Trigger (visible input-like box) */}
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select fleet type" />
+                    </SelectTrigger>
+
+                    {/* Dropdown content */}
+                    <SelectContent>
+                      {fleetOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
                   <Input
                     placeholder="Price"
                     type="number"
-                    value={newRoute.price}
+                    value={
+                      newRoute.price <= 0 ? "Enter the Price" : newRoute.price
+                    }
                     onChange={(e) =>
                       setNewRoute({
                         ...newRoute,
@@ -279,7 +319,7 @@ const AdminRoutesPage: React.FC = () => {
                     <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">No Agencies found.</p>
                   </div>
-                ):(
+                ) : (
                   <>
                     {/* DESKTOP: Table View (hidden on mobile) */}
                     <div className="overflow-x-auto hidden md:block">
@@ -290,6 +330,8 @@ const AdminRoutesPage: React.FC = () => {
                             <th className="p-2 text-left">Destination</th>
                             <th className="p-2 text-left">Price</th>
                             <th className="p-2 text-left">Agency</th>
+                            <th className="p-2 text-left">Type</th>
+                            <th className="p-2 text-left">Ammenities</th>
                             <th className="p-2 text-left">Actions</th>
                           </tr>
                         </thead>
@@ -308,7 +350,7 @@ const AdminRoutesPage: React.FC = () => {
                                     }
                                   />
                                 ) : (
-                                  route.origin
+                                  route.origin.toUpperCase()
                                 )}
                               </td>
                               <td className="p-2">
@@ -323,7 +365,7 @@ const AdminRoutesPage: React.FC = () => {
                                     }
                                   />
                                 ) : (
-                                  route.destination
+                                  route.destination.toUpperCase()
                                 )}
                               </td>
                               <td className="p-2">
@@ -353,6 +395,38 @@ const AdminRoutesPage: React.FC = () => {
                                   // agencies.find((a) => a.id === route.agencyId) ?.name
                                   route.travelAgency.name
                                 )}
+                              </td>
+                              <td className="p-2">
+                                {editingId === route.id ? (
+                                  <Select
+                                    required
+                                    value={editData.fleetType}
+                                    onValueChange={(e) =>
+                                      setEditData({ ...editData, fleetType: e })
+                                    }
+                                  >
+                                    {/* Trigger (visible input-like box) */}
+                                    <SelectTrigger className="w-full">
+                                      <SelectValue placeholder="Select fleet type" />
+                                    </SelectTrigger>
+
+                                    {/* Dropdown content */}
+                                    <SelectContent>
+                                      {fleetOptions.map((option) => (
+                                        <SelectItem key={option} value={option}>
+                                          {option}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                ) : (
+                                  route.fleetType ?? "-"
+                                )}
+                              </td>
+                              <td className="p-2">
+                                {route.amenities.length > 0
+                                  ? route.amenities.join(", ")
+                                  : "No amenities"}
                               </td>
                               <td className="p-2 space-x-2">
                                 {editingId === route.id ? (
@@ -405,12 +479,12 @@ const AdminRoutesPage: React.FC = () => {
                           <div className="flex justify-between items-start">
                             <div>
                               <h3 className="font-semibold">
-                                {route.origin} → {route.destination}
+                                {route.origin.toUpperCase()} → {route.destination.toUpperCase()}
                               </h3>
                               <p className="text-sm text-muted-foreground mt-1">
                                 {route.travelAgency.name}
                               </p>
-                              <p className="text-sm mt-1">${route.price}</p>
+                              <p className="text-sm mt-1">{route.price} FCFA</p>
                               <p className="text-xs text-muted-foreground mt-1">
                                 Departs:{" "}
                                 {new Date(route.departureTime).toLocaleString()}
@@ -418,6 +492,15 @@ const AdminRoutesPage: React.FC = () => {
                               <p className="text-xs text-muted-foreground">
                                 Arrives:{" "}
                                 {new Date(route.arrivalTime).toLocaleString()}
+                              </p>
+                              <p className="text-xs font-bold ">
+                                Fleet Type: {route.fleetType}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Amenities:{" "}
+                                {route.amenities.length > 0
+                                  ? route.amenities.join(", ")
+                                  : "No amenities"}
                               </p>
                             </div>
 
@@ -501,6 +584,27 @@ const AdminRoutesPage: React.FC = () => {
                                   setEditData({ ...editData, agencyId })
                                 }
                               />
+                              <Select
+                                required
+                                value={editData.fleetType}
+                                onValueChange={(e) =>
+                                  setEditData({ ...editData, fleetType: e })
+                                }
+                              >
+                                {/* Trigger (visible input-like box) */}
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Select fleet type" />
+                                </SelectTrigger>
+
+                                {/* Dropdown content */}
+                                <SelectContent>
+                                  {fleetOptions.map((option) => (
+                                    <SelectItem key={option} value={option}>
+                                      {option}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </div>
                           )}
                         </Card>

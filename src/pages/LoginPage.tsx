@@ -68,7 +68,7 @@ export default function LoginPage() {
             <div className="p-3 bg-primary rounded-xl">
               <Bus className="h-8 w-8 text-primary-foreground" />
             </div>
-            <span className="text-2xl font-bold gradient-text">KamerWays</span>
+            <span className="text-2xl font-bold gradient-text">GlobalBush</span>
           </Link>
           <h1 className="text-2xl font-bold">{t('auth.login')}</h1>
           <p className="text-muted-foreground mt-2">
@@ -82,7 +82,7 @@ export default function LoginPage() {
             <CardContent className="p-4 text-center">
               <Shield className="h-8 w-8 text-primary mx-auto mb-2" />
               <p className="font-medium text-sm">{t('auth.adminLogin')}</p>
-              <p className="text-xs text-muted-foreground">admin@kamerways.com</p>
+              <p className="text-xs text-muted-foreground">admin@gmail.com</p>
             </CardContent>
           </Card>
           
@@ -163,7 +163,7 @@ export default function LoginPage() {
             <h3 className="font-medium mb-2">Demo Credentials:</h3>
             <div className="space-y-2 text-sm">
               <div>
-                <span className="font-medium">Admin:</span> admin@kamerways.com / admin123
+                <span className="font-medium">Admin:</span> admin@GlobalBush.com / admin123
               </div>
               <div>
                 <span className="font-medium">Customer:</span> john.doe@email.com / customer123

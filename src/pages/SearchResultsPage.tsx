@@ -57,7 +57,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 interface SearchFilters {
   minPrice: number;
   maxPrice: number;
-  busTypes: string[];
+  fleetTypes: string[];
   amenities: string[];
   agencies: string[];
   departureTimeRange: string;
@@ -86,7 +86,7 @@ const SearchResultsPage = () => {
   const [filters, setFilters] = useState<SearchFilters>({
     minPrice: 0,
     maxPrice: 100000,
-    busTypes: [],
+    fleetTypes: [],
     amenities: [],
     agencies: [],
     departureTimeRange: "all",
@@ -94,7 +94,7 @@ const SearchResultsPage = () => {
   });
 
   // Available filter options
-  const busTypes = ["Express", "Standard", "Luxury", "Night Express"];
+  const fleetTypes = ["Express", "Standard", "Luxury", "Night Express"];
   const amenitiesOptions = ["WiFi", "AC", "Meals", "Entertainment", "Charging Ports", "Reclining Seats"];
   const timeRanges = [
     { value: "all", label: "Any Time" },
@@ -188,13 +188,13 @@ const SearchResultsPage = () => {
         const routeOrigin = safeString(route.origin).toLowerCase();
         const routeDestination = safeString(route.destination).toLowerCase();
         const agencyName = safeString(route.travelAgency?.name).toLowerCase();
-        const busType = safeString(route.busType).toLowerCase();
+        const fleetType = safeString(route.fleetType).toLowerCase();
         
         const matchesSearch = 
           routeOrigin.includes(query) ||
           routeDestination.includes(query) ||
           agencyName.includes(query) ||
-          busType.includes(query);
+          fleetType.includes(query);
         
         if (!matchesSearch) return false;
       }
@@ -206,8 +206,8 @@ const SearchResultsPage = () => {
       }
 
       // Bus type filter
-      const routeBusType = safeString(route.busType);
-      if (filters.busTypes.length > 0 && !filters.busTypes.includes(routeBusType)) {
+      const routefleetType = safeString(route.fleetType);
+      if (filters.fleetTypes.length > 0 && !filters.fleetTypes.includes(routefleetType)) {
         return false;
       }
 
@@ -410,26 +410,26 @@ const SearchResultsPage = () => {
           <div className="space-y-3">
             <Label className="text-base font-medium">Bus Type</Label>
             <div className="space-y-2">
-              {safeArray(busTypes).map(type => (
+              {safeArray(fleetTypes).map(type => (
                 <div key={type} className="flex items-center space-x-2">
                   <Checkbox
-                    id={`bustype-${type}`}
-                    checked={filters.busTypes.includes(type)}
+                    id={`fleetType-${type}`}
+                    checked={filters.fleetTypes.includes(type)}
                     onCheckedChange={(checked) => {
                       if (checked) {
                         setFilters(prev => ({
                           ...prev,
-                          busTypes: [...prev.busTypes, type]
+                          fleetTypes: [...prev.fleetTypes, type]
                         }));
                       } else {
                         setFilters(prev => ({
                           ...prev,
-                          busTypes: prev.busTypes.filter(t => t !== type)
+                          fleetTypes: prev.fleetTypes.filter(t => t !== type)
                         }));
                       }
                     }}
                   />
-                  <Label htmlFor={`bustype-${type}`}>{type}</Label>
+                  <Label htmlFor={`fleetType-${type}`}>{type}</Label>
                 </div>
               ))}
             </div>
@@ -530,7 +530,7 @@ const SearchResultsPage = () => {
               setFilters({
                 minPrice: isFinite(minPrice) ? minPrice : 0,
                 maxPrice: isFinite(maxPrice) ? maxPrice : 100000,
-                busTypes: [],
+                fleetTypes: [],
                 amenities: [],
                 agencies: [],
                 departureTimeRange: "all",
@@ -553,8 +553,8 @@ const SearchResultsPage = () => {
     <div className="min-h-screen bg-background">
       <SEO
         title={hasSearched && origin && destination ? 
-          `Bus Routes from ${origin} to ${destination} - KamerWays Connect` :
-          "All Bus Routes & Trips - KamerWays Connect"
+          `Bus Routes from ${origin} to ${destination} - GlobalBush Connect` :
+          "All Bus Routes & Trips - GlobalBush Connect"
         }
         description={hasSearched && origin && destination ?
           `Find and book bus tickets from ${origin} to ${destination}. Compare prices, schedules, and amenities from top bus agencies in Cameroon.` :
@@ -715,7 +715,7 @@ const SearchResultsPage = () => {
                         {route?.travelAgency?.name || getAgencyName(route?.agencyId)}
                       </h3>
                       <Badge variant="secondary" className="flex-shrink-0">
-                        {safeString(route?.busType)}
+                        {safeString(route?.fleetType)}
                       </Badge>
                     </div>
                     

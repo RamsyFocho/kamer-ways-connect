@@ -102,7 +102,7 @@ const Index = () => {
         keywords={[
           "bus travel Cameroon",
           "online bus booking",
-          "KamerWays",
+          "GlobalBush",
           "GlobalBush",
           "Global Bush",
           "Quick Ride",
@@ -150,9 +150,9 @@ const Index = () => {
             url: "https://GlobalBush-Quick-Ride.com",
             logo: "https://GlobalBush-Quick-Ride.com/logo.png",
             sameAs: [
-              "https://www.facebook.com/kamerwaysconnect",
-              "https://twitter.com/kamerwaysconnect",
-              "https://www.instagram.com/kamerwaysconnect",
+              "https://www.facebook.com/GlobalBushconnect",
+              "https://twitter.com/GlobalBushconnect",
+              "https://www.instagram.com/GlobalBushconnect",
             ],
           }),
         }}
@@ -281,7 +281,7 @@ const Index = () => {
       <section className="py-20 bg-muted/50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Choose KamerWays?</h2>
+            <h2 className="text-3xl font-bold mb-4">Why Choose GlobalBush?</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Experience the best in bus travel with our modern amenities and
               dedicated service
@@ -308,8 +308,8 @@ const Index = () => {
         </div>
       </section>
 
-      <Testimonials />
       <FloatingActions />
+      <Testimonials />
     </div>
   );
 };

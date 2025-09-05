@@ -15,14 +15,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
-    const stored = localStorage.getItem('kamerways-theme') as Theme;
+    const stored = localStorage.getItem('GlobalBush-theme') as Theme;
     if (stored) {
       setTheme(stored);
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('kamerways-theme', theme);
+    localStorage.setItem('GlobalBush-theme', theme);
     
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');

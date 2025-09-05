@@ -17,8 +17,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Check for stored auth data on app load
-    const storedUser = localStorage.getItem('kamerways-user');
-    const storedToken = localStorage.getItem('kamerways-token');
+    const storedUser = localStorage.getItem('loggedUser');
+    const storedToken = localStorage.getItem('jwtToken');
     
     if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
@@ -34,8 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(response.message);
       }
       setUser(response.user as User);
-      localStorage.setItem('kamerways-user', JSON.stringify(response.user));
-      localStorage.setItem('kamerways-token', response.token);
+      localStorage.setItem('loggedUser', JSON.stringify(response.user));
+      localStorage.setItem('jwtToken', response.token);
     } catch (error) {
       throw error;
     }
@@ -43,8 +43,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('kamerways-user');
-    localStorage.removeItem('kamerways-token');
+    localStorage.removeItem('loggedUser');
+    localStorage.removeItem('jwtToken');
   };
 
   const value = {

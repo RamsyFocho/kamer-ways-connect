@@ -50,11 +50,11 @@ export default function AgenciesPage() {
     <div className="min-h-screen bg-background">
       <SEO
         title="All Bus Agencies"
-        description="Browse all bus agencies operating in Cameroon. Find the best travel companies for your journey and book your tickets with KamerWays Connect."
+        description="Browse all bus agencies operating in Cameroon. Find the best travel companies for your journey and book your tickets with GlobalBush Connect."
         keywords={[
           "bus agencies Cameroon",
           "travel companies Cameroon",
-          "KamerWays Express",
+          "GlobalBush Express",
           "Cameroon Transit",
         ]}
       />

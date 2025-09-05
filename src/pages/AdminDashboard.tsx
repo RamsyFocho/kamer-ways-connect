@@ -39,7 +39,7 @@ const AdminDashboard = () => {
     { route: "Limbe-Bamenda", count: 600 },
   ];
   const revenueByAgency = [
-    { agency: "KamerWays Express", revenue: 120000000 },
+    { agency: "GlobalBush Express", revenue: 120000000 },
     { agency: "TransCam", revenue: 90000000 },
     { agency: "Express Union", revenue: 70000000 },
     { agency: "BucaVoyage", revenue: 50000000 },

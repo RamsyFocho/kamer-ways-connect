@@ -1,4 +1,4 @@
-// Mock data for KamerWays Bus Reservation System
+// Mock data for GlobalBush Bus Reservation System
 
 // TypeScript Interfaces
 export interface User {
@@ -36,7 +36,7 @@ export interface Route {
   arrivalTime: string;
   duration: string;
   price: number;
-  busType: string;
+  fleetType: string;
   amenities: string[];
   availableSeats: number;
   totalSeats: number;
@@ -75,7 +75,7 @@ export interface Booking {
 export const mockAgencies = [
   {
     id: "agency-1",
-    name: "KamerWays Express",
+    name: "GlobalBush Express",
     logo: "/placeholder.svg",
     rating: 4.8,
     reviewCount: 1250,
@@ -143,7 +143,7 @@ export const mockRoutes = [
     arrivalTime: "11:30",
     duration: "3h 30m",
     price: 15000,
-    busType: "Express",
+    fleetType: "Express",
     amenities: ["WiFi", "AC", "Reclining Seats"],
     availableSeats: 28,
     totalSeats: 40,
@@ -158,7 +158,7 @@ export const mockRoutes = [
     arrivalTime: "17:30",
     duration: "3h 30m",
     price: 15000,
-    busType: "Express",
+    fleetType: "Express",
     amenities: ["WiFi", "AC", "Entertainment"],
     availableSeats: 35,
     totalSeats: 40,
@@ -173,7 +173,7 @@ export const mockRoutes = [
     arrivalTime: "12:00",
     duration: "5h 30m",
     price: 25000,
-    busType: "Standard",
+    fleetType: "Standard",
     amenities: ["AC", "GPS Tracking"],
     availableSeats: 42,
     totalSeats: 50,
@@ -188,7 +188,7 @@ export const mockRoutes = [
     arrivalTime: "08:00",
     duration: "12h",
     price: 35000,
-    busType: "Night Express",
+    fleetType: "Night Express",
     amenities: ["WiFi", "AC", "Meals", "Rest Stops"],
     availableSeats: 18,
     totalSeats: 35,
@@ -203,7 +203,7 @@ export const mockRoutes = [
     arrivalTime: "13:30",
     duration: "3h 30m",
     price: 20000,
-    busType: "Luxury",
+    fleetType: "Luxury",
     amenities: ["WiFi", "Premium Seats", "Personal Entertainment"],
     availableSeats: 15,
     totalSeats: 20,
@@ -226,7 +226,7 @@ export const mockUsers: User[] = [
   {
     id: "admin-1",
     name: "Admin User",
-    email: "admin@kamerways.com",
+    email: "admin@GlobalBush.com",
     phone: "+237987654321",
     role: "admin",
     joinDate: "2023-01-01",
@@ -342,7 +342,7 @@ export const mockAnalytics = {
     { route: "Douala → Kribi", bookings: 1200 },
   ],
   agencyPerformance: [
-    { agency: "KamerWays Express", bookings: 4500, revenue: 135000000 },
+    { agency: "GlobalBush Express", bookings: 4500, revenue: 135000000 },
     { agency: "Central African Lines", bookings: 6200, revenue: 186000000 },
     { agency: "Cameroon Transit", bookings: 3800, revenue: 114000000 },
     { agency: "Royal Coach", bookings: 920, revenue: 27600000 },
@@ -352,7 +352,7 @@ export const mockAnalytics = {
 // Default login credentials
 export const defaultCredentials = {
   admin: {
-    email: "admin@kamerways.com",
+    email: "admin@GlobalBush.com",
     password: "admin123",
     user: mockUsers.find((u) => u.role === "admin"),
   },

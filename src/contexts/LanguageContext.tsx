@@ -230,7 +230,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState('en');
 
   useEffect(() => {
-    const stored = localStorage.getItem('kamerways-language');
+    const stored = localStorage.getItem('GlobalBush-language');
     if (stored) {
       setLanguage(stored);
       i18n.changeLanguage(stored);
@@ -239,7 +239,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const handleLanguageChange = (lang: string) => {
     setLanguage(lang);
-    localStorage.setItem('kamerways-language', lang);
+    localStorage.setItem('GlobalBush-language', lang);
     i18n.changeLanguage(lang);
   };
 

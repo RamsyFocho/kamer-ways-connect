@@ -84,7 +84,7 @@ export function Footer() {
 
         <div className="border-t mt-8 pt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            © 2024 KamerWays. All rights reserved. Built with ❤️ for travelers across Cameroon.
+            © 2024 GlobalBush. All rights reserved. Built with ❤️ for travelers across Cameroon.
           </p>
         </div>
       </div>

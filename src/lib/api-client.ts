@@ -1,7 +1,7 @@
-
+// apiClient.ts
+import axios from "axios";
 import { toast } from "sonner";
-import type { User } from "./mock-data";
-
+// import type { User } from "./mock-data";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 // Generic API Error Handler
@@ -30,14 +30,16 @@ export const handleApiError = (error: any, entity: string = "data") => {
         errorMessage = "Validation error. Please check your input.";
         break;
       case 500:
-        errorMessage = "An internal server error occurred. Please try again later.";
+        errorMessage =
+          "An internal server error occurred. Please try again later.";
         break;
       default:
         errorMessage = `An unexpected error occurred (code: ${errorCode}).`;
     }
   } else if (error.request) {
     // The request was made but no response was received
-    errorMessage = "No response from server. Please check your network connection.";
+    errorMessage =
+      "No response from server. Please check your network connection.";
   } else if (error.message) {
     // Something happened in setting up the request that triggered an Error
     errorMessage = error.message;
@@ -54,9 +56,22 @@ export const handleApiError = (error: any, entity: string = "data") => {
   };
 };
 
+// Get token from localStorage/sessionStorage/auth provider
+const getToken = () => localStorage.getItem("jwtToken");
+const api = axios.create({
+  baseURL: backendUrl, // your backend
+  headers: { "Content-Type": "application/json" },
+});
+api.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // API Mock Functions
 let routes: any[];
-
 
 export const getRoutes = async (
   params: {
@@ -71,7 +86,9 @@ export const getRoutes = async (
   try {
     // Simulate an error for testing purposes
     if (simulateError) {
-      const error: any = new Error(`Simulated HTTP error! Status: ${simulateError}`);
+      const error: any = new Error(
+        `Simulated HTTP error! Status: ${simulateError}`
+      );
       error.response = { status: simulateError };
       throw error;
     }
@@ -86,7 +103,12 @@ export const getRoutes = async (
     routes = await response.json();
 
     // If no search params, return all routes
-    if (!params.origin && !params.destination && !params.date && !params.agencyId) {
+    if (
+      !params.origin &&
+      !params.destination &&
+      !params.date &&
+      !params.agencyId
+    ) {
       return Promise.resolve(routes);
     }
 
@@ -103,7 +125,9 @@ export const getRoutes = async (
       );
     }
     if (params?.date) {
-      filteredRoutes = filteredRoutes.filter((r: any) => r.date === params.date);
+      filteredRoutes = filteredRoutes.filter(
+        (r: any) => r.date === params.date
+      );
     }
     if (params?.agencyId) {
       filteredRoutes = filteredRoutes.filter(
@@ -168,16 +192,20 @@ export const createBooking = async (booking: any) => {
     throw error;
   }
 };
-
+export const createTrip = async (trip: any) => {
+  try {
+    // Axios throws on non-2xx by default, so no manual ok check is needed
+    const response = await api.post("/api/createTrip", trip);
+    return response.data;
+  } catch (error) {
+    handleApiError(error, "Trip creation");
+    throw error;
+  }
+};
 export const getAllBookings = async () => {
   try {
-    const response = await fetch(`${backendUrl}/api/viewReservations`);
-    if (!response.ok) {
-      const error: any = new Error(`HTTP error! Status: ${response.status}`);
-      error.response = { status: response.status };
-      return handleApiError(error);
-    }
-    return await response.json();
+    const response = await api.get("/api/viewReservations");
+    return response.data; // Axios puts the response body in `data`
   } catch (error) {
     return handleApiError(error, "bookings");
   }
@@ -192,30 +220,16 @@ export const updateBookingStatus = async (
   numberOfSeats: number
 ) => {
   try {
-    const response = await fetch(
-      `${backendUrl}/api/${id}/approveReservation`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          seatNumber: seatNumbers,
-          busNumber: busNumber,
-          departureTime: departureTime,
-          numberOfSeats: numberOfSeats,
-        })
-      }
-    );
-    if (!response.ok) {
-      const error: any = new Error(`HTTP error! Status: ${response.status}`);
-      error.response = { status: response.status };
-      throw error;
-    }
-    return await response.json();
+    const response = await api.put(`/api/${id}/approveReservation`, {
+      seatNumber: seatNumbers,
+      busNumber: busNumber,
+      departureTime: departureTime,
+      numberOfSeats: numberOfSeats,
+    });
+    return response.data;
   } catch (error) {
-     handleApiError(error, `booking with id ${id}`);
-     return error;
+    handleApiError(error, `booking with id ${id}`);
+    return error;
   }
 };
 
@@ -238,35 +252,39 @@ export const deleteBooking = async (id: string) => {
 export const getUserBookings = async (userId: string) => {
   try {
     const allBookings = await getAllBookings();
-    if (allBookings.error) {
+    if ((allBookings as any).error) {
       return allBookings; // Propagate error
     }
-    return allBookings.filter((b: any) => b.userId === userId);
+    return (allBookings as any).filter((b: any) => b.userId === userId);
   } catch (error) {
     return handleApiError(error, `bookings for user ${userId}`);
   }
 };
 
 // actual implementation. TODO
-// export const login = async (credentials: any) => {
-//   try {
-//     const response = await fetch(`${backendUrl}/api/login`, {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify(credentials),
-//     });
-//     if (!response.ok) {
-//       const error: any = new Error(`HTTP error! Status: ${response.status}`);
-//       error.response = { status: response.status };
-//       throw error;
-//     }
-//     return await response.json();
-//   } catch (error) {
-//     return handleApiError(error, "login");
-//   }
-// };
+export const login = async (credentials: any) => {
+  try {
+    const response = await fetch(`${backendUrl}/api/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(credentials),
+    });
+    if (!response.ok) {
+      const error: any = new Error(`HTTP error! Status: ${response.status}`);
+      error.response = { status: response.status };
+      return handleApiError(error, `Auth error`);
+    }
+    const result = await response.json();
+    return Promise.resolve({
+      user: result.user ?? defaultCredentials.admin.user,
+      token: result.token,
+    });
+  } catch (error) {
+    return Promise.reject(new Error("Invalid credentials " + error));
+  }
+};
 
 // mock implementation
 export interface User {
@@ -294,7 +312,7 @@ export const mockUsers: User[] = [
   {
     id: "admin-1",
     name: "Admin User",
-    email: "admin@kamerways.com",
+    email: "admin@gmail.com",
     phone: "+237987654321",
     role: "admin",
     joinDate: "2023-01-01",
@@ -304,7 +322,7 @@ export const mockUsers: User[] = [
 ];
 export const defaultCredentials = {
   admin: {
-    email: "admin@kamerways.com",
+    email: "admin@gmail.com",
     password: "admin123",
     user: mockUsers.find((u) => u.role === "admin"),
   },
@@ -314,59 +332,58 @@ export const defaultCredentials = {
     user: mockUsers.find((u) => u.role === "customer"),
   },
 };
-export const login = (credentials: any) => {
-        console.log(credentials);
-  
-    if (
-      credentials.email === defaultCredentials.admin.email &&
-      credentials.password === defaultCredentials.admin.password
-    ) {
-      return Promise.resolve({
-        user: defaultCredentials.admin.user,
-        token: "admin-token",
-      });
-    }
-    if (
-      credentials.email === defaultCredentials.customer.email &&
-      credentials.password === defaultCredentials.customer.password
-    ) {
-      return Promise.resolve({
-        user: defaultCredentials.customer.user,
-        token: "customer-token",
-      });
-    }
-    return Promise.reject(new Error("Invalid credentials"));
-  }
+// export const login = (credentials: any) => {
+//         console.log(credentials);
+
+//     if (
+//       credentials.email === defaultCredentials.admin.email &&
+//       credentials.password === defaultCredentials.admin.password
+//     ) {
+//       return Promise.resolve({
+//         user: defaultCredentials.admin.user,
+//         token: "admin-token",
+//       });
+//     }
+//     if (
+//       credentials.email === defaultCredentials.customer.email &&
+//       credentials.password === defaultCredentials.customer.password
+//     ) {
+//       return Promise.resolve({
+//         user: defaultCredentials.customer.user,
+//         token: "customer-token",
+//       });
+//     }
+//     return Promise.reject(new Error("Invalid credentials"));
+//   }
 export const mockNotifications = [
-    {
-      id: "notif-1",
-      userId: "user-1",
-      message: "Your booking for route Douala to Yaoundé has been confirmed!",
-      read: false,
-      timestamp: "2024-08-07T10:00:00Z",
-    },
-    {
-      id: "notif-2",
-      userId: "admin-1",
-      message: "New booking received from John Doe.",
-      read: false,
-      timestamp: "2024-08-07T10:05:00Z",
-    },
-  ];
+  {
+    id: "notif-1",
+    userId: "user-1",
+    message: "Your booking for route Douala to Yaoundé has been confirmed!",
+    read: false,
+    timestamp: "2024-08-07T10:00:00Z",
+  },
+  {
+    id: "notif-2",
+    userId: "admin-1",
+    message: "New booking received from John Doe.",
+    read: false,
+    timestamp: "2024-08-07T10:05:00Z",
+  },
+];
 export const addNotification = (notification) => {
-    const newNotif = { ...notification, id: `notif-${Date.now()}` };
-    mockNotifications.push(newNotif);
-    return Promise.resolve(newNotif);
-}
-export const getNotifications = (userId) =>{
-    return Promise.resolve(mockNotifications.filter((n) => n.userId === userId));
-}
+  const newNotif = { ...notification, id: `notif-${Date.now()}` };
+  mockNotifications.push(newNotif);
+  return Promise.resolve(newNotif);
+};
+export const getNotifications = (userId) => {
+  return Promise.resolve(mockNotifications.filter((n) => n.userId === userId));
+};
 export const markNotificationAsRead = (id) => {
-    const notifIndex = mockNotifications.findIndex((n) => n.id === id);
-    if (notifIndex > -1) {
-      mockNotifications[notifIndex].read = true;
-      return Promise.resolve(mockNotifications[notifIndex]);
-    }
-    return Promise.reject(new Error("Notification not found"));
-}
-  
+  const notifIndex = mockNotifications.findIndex((n) => n.id === id);
+  if (notifIndex > -1) {
+    mockNotifications[notifIndex].read = true;
+    return Promise.resolve(mockNotifications[notifIndex]);
+  }
+  return Promise.reject(new Error("Notification not found"));
+};
