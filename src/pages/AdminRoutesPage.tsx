@@ -4,6 +4,14 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Save, X, Edit, Trash2 } from "lucide-react";
+
+import {
   Select,
   SelectTrigger,
   SelectValue,
@@ -23,7 +31,7 @@ const fetchRoutes = async (): Promise<Route[]> => {
   try {
     const response = await fetch(`${backendUrl}/api/viewAllTrips`);
     if (!response.ok) {
-      toast.error("Failed to fetch trips/routes: "+ response.status);
+      toast.error("Failed to fetch trips/routes: " + response.status);
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     const data = await response.json();
@@ -428,42 +436,88 @@ const AdminRoutesPage: React.FC = () => {
                                   ? route.amenities.join(", ")
                                   : "No amenities"}
                               </td>
-                              <td className="p-2 space-x-2">
+                              <td className="p-2 flex items-center flex-wrap gap-[0.2rem] justify-center">
                                 {editingId === route.id ? (
                                   <>
-                                    <Button
-                                      size="sm"
-                                      onClick={handleUpdate}
-                                      disabled={updateMutation.isPending}
-                                    >
-                                      Save
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => setEditingId(null)}
-                                    >
-                                      Cancel
-                                    </Button>
+                                    {/* Save */}
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            onClick={handleUpdate}
+                                            disabled={updateMutation.isPending}
+                                            className="flex items-center gap-1"
+                                          >
+                                            <Save className="h-4 w-4" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Save changes</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+
+                                    {/* Cancel */}
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => setEditingId(null)}
+                                            className="flex items-center gap-1"
+                                          >
+                                            <X className="h-4 w-4" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Cancel</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
                                   </>
                                 ) : (
                                   <>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => handleEdit(route)}
-                                    >
-                                      Edit
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="destructive"
-                                      onClick={() =>
-                                        deleteMutation.mutate(route.id)
-                                      }
-                                    >
-                                      Delete
-                                    </Button>
+                                    {/* Edit */}
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => handleEdit(route)}
+                                            className="flex items-center gap-1"
+                                          >
+                                            <Edit className="h-4 w-4" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Edit trip</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+
+                                    {/* Delete */}
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            onClick={() =>
+                                              deleteMutation.mutate(route.id)
+                                            }
+                                            className="flex items-center gap-1"
+                                          >
+                                            <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Delete trip</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
                                   </>
                                 )}
                               </td>
@@ -479,7 +533,8 @@ const AdminRoutesPage: React.FC = () => {
                           <div className="flex justify-between items-start">
                             <div>
                               <h3 className="font-semibold">
-                                {route.origin.toUpperCase()} → {route.destination.toUpperCase()}
+                                {route.origin.toUpperCase()} →{" "}
+                                {route.destination.toUpperCase()}
                               </h3>
                               <p className="text-sm text-muted-foreground mt-1">
                                 {route.travelAgency.name}
