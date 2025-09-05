@@ -238,24 +238,7 @@ const Index = () => {
                               {agency?.fleetSize || 0} {t("agencies.buses")}
                             </span>
                           </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-1">
-                          {(Array.isArray(agency?.features)
-                            ? agency.features
-                            : ["WiFi", "AC", "Charging Ports"]
-                          )
-                            .slice(0, 3)
-                            .map((feature, i) => (
-                              <Badge
-                                key={feature + i}
-                                variant="secondary"
-                                className="text-xs"
-                              >
-                                {feature}
-                              </Badge>
-                            ))}
-                        </div>
+                        </div>                        
 
                         <Button className="w-full group" asChild>
                           <Link to={`/agencies/${agency?.id || ""}`}>

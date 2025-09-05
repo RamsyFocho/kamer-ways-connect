@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Clock, MapPin, Users } from "lucide-react";
+import { ArrowRight, Clock, MapPin, Users } from "lucide-react";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import SEO from "@/components/Seo";
 import { getRoutes, getAgency } from "@/lib/api-client";
 import { Agency, Route } from "@/lib/mock-data";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Amenities } from "@/components/Amenities";
 
 export default function AgencyDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -91,7 +92,8 @@ export default function AgencyDetailPage() {
                   <div className="flex items-center space-x-2">
                     <Clock className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                     <span className="text-sm text-muted-foreground">
-                      {route.departureTime} - {route.arrivalTime}
+                      {new Date(route.departureTime).toLocaleString()} -{" "}
+                      {new Date(route.arrivalTime).toLocaleString()}
                     </span>
                   </div>
 
@@ -102,6 +104,8 @@ export default function AgencyDetailPage() {
                       {route.availableSeats || 45} seats available
                     </span>
                   </div>
+                  {/* Amenities */}
+                  <Amenities amenities={route.amenities} />
                 </div>
 
                 {/* Price and Book Button */}
@@ -121,6 +125,7 @@ export default function AgencyDetailPage() {
                     className="w-full"
                   >
                     Book Now
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
