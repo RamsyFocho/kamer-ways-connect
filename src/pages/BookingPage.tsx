@@ -644,7 +644,7 @@ export default function BookingPage() {
               </CardContent>
             </Card>
 
-            <div className="flex justify-between pt-6">
+            <div className="flex justify-center md:justify-between pt-6 flex-wrap gap-2">
               <Button
                 variant="outline"
                 onClick={handleBack}
@@ -759,7 +759,7 @@ export default function BookingPage() {
               </CardContent>
             </Card>
 
-            <div className="flex justify-between pt-6">
+            <div className="flex justify-center md:justify-between pt-6 flex-wrap gap-2 ">
               <Button
                 variant="outline"
                 onClick={handleBack}
@@ -810,7 +810,7 @@ export default function BookingPage() {
               totalAmount={route.price * bookingData.selectedSeats.length}
             />
 
-            <div className="flex justify-between pt-6">
+            <div className="flex justify-center md:justify-between pt-6 gap-2 flex-wrap">
               <Button
                 variant="outline"
                 onClick={handleBack}
@@ -823,7 +823,7 @@ export default function BookingPage() {
                 onClick={handleConfirmBooking}
                 disabled={createBookingMutation.isPending}
                 size="lg"
-                className="px-8"
+                className="px-8 "
               >
                 {createBookingMutation.isPending ? (
                   <>
@@ -931,7 +931,7 @@ export default function BookingPage() {
                 </div>
               </>
             )}
-            <div className="flex gap-4 justify-center">
+            <div className="flex gap-4 justify-center flex-wrap">
               <Button asChild variant="outline" size="lg">
                 <Link to="/bookings">View My Bookings</Link>
               </Button>
