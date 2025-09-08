@@ -202,6 +202,16 @@ export const createTrip = async (trip: any) => {
     throw error;
   }
 };
+export const createAgency = async (Agency: any) => {
+  try {
+    // Axios throws on non-2xx by default, so no manual ok check is needed
+    const response = await api.post("api/createAgency", Agency);
+    return response.data;
+  } catch (error) {
+    handleApiError(error, "Trip creation");
+    throw error;
+  }
+};
 export const getAllBookings = async () => {
   try {
     const response = await api.get("/api/viewReservations");

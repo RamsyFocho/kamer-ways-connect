@@ -10,6 +10,7 @@ import { Agency } from "@/lib/mock-data";
 import { toast } from "sonner";
 import { Menu, FileText } from "lucide-react"; // Icon for mobile menu toggle
 import defaultLogo from "../assets/busAgency/defaultLogo.jpg";
+import { createAgency} from "@/lib/api-client.ts";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -57,22 +58,9 @@ const AdminAgenciesPage: React.FC = () => {
 
   // Mutations remain largely the same, but using invalidateQueries for robust refetching
   const createMutation = useMutation({
-    mutationFn: async (agency: Partial<Agency>) => {
-      const res = await fetch(`${backendUrl}/api/createAgency`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: agency.name,
-          contactInfo: agency.contactInfo,
-          logo: agency.logo,
-          description: agency.description,
-        }),
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to create Agency");
-      }
-      return res.json();
+    mutationFn: async (agency: Partial<Agency>) => {      
+      const res = await createAgency(agency);
+      return res;
     },
     onSuccess: () => {
       toast.success("Agency created successfully");
