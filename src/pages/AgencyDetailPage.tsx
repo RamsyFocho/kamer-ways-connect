@@ -15,12 +15,23 @@ export default function AgencyDetailPage() {
   const [agency, setAgency] = useState<Agency | null>(null);
   const [routes, setRoutes] = useState<Route[]>([]);
   const navigate = useNavigate();
+
   useEffect(() => {
     if (id) {
       getAgency(id).then(setAgency);
-      getRoutes({ agencyId: id }).then(setRoutes);
+      getRoutes({ agencyId: id }).then((data) => {
+        // Correctly handle the API response and set state
+        if (Array.isArray(data)) {
+          setRoutes(data);
+        } else if (data && Array.isArray(data.data)) {
+          setRoutes(data.data);
+        } else {
+          setRoutes([]);
+        }
+      });
     }
   }, [id]);
+
   if (!agency) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -39,6 +50,7 @@ export default function AgencyDetailPage() {
       </div>
     );
   }
+
   console.log(agency);
 
   const handleRedirectBooking = (routeId) => {
@@ -51,6 +63,7 @@ export default function AgencyDetailPage() {
       console.error("Error: ", err);
     }
   };
+
   return (
     <div className="min-h-screen bg-background">
       <SEO
@@ -60,7 +73,7 @@ export default function AgencyDetailPage() {
           agency.name,
           "bus routes",
           "book tickets",
-          ...routes.map((r) => `${r.origin} to ${r.destination}`),
+          ...(Array.isArray(routes) ? routes.map((r) => `${r.origin} to ${r.destination}`) : []),
         ]}
       />
       <div className="container mx-auto px-4 py-8">
