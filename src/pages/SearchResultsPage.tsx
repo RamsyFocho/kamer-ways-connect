@@ -838,8 +838,10 @@ const SearchResultsPage = () => {
                         </div>
                       </div>
 
-                      <Button asChild className="w-full">
+                      <Button
+                        className="w-full"
                         onClick={() => handleRedirectBooking(route.id)}
+                      >
                         Book Now
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
