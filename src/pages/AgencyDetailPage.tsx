@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Clock, MapPin, Users } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowRight, Clock, MapPin, Users, Bus, Info } from "lucide-react";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,25 +14,27 @@ export default function AgencyDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [agency, setAgency] = useState<Agency | null>(null);
   const [routes, setRoutes] = useState<Route[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (id) {
-      getAgency(id).then(setAgency);
-      getRoutes({ agencyId: id }).then((data) => {
-        // Correctly handle the API response and set state
-        if (Array.isArray(data)) {
-          setRoutes(data);
-        } else if (data && Array.isArray(data.data)) {
-          setRoutes(data.data);
-        } else {
-          setRoutes([]);
-        }
-      });
+      Promise.all([getAgency(id), getRoutes({ agencyId: id })])
+        .then(([agencyData, routeData]) => {
+          setAgency(agencyData);
+          if (Array.isArray(routeData)) {
+            setRoutes(routeData);
+          } else if (routeData && Array.isArray(routeData.data)) {
+            setRoutes(routeData.data);
+          } else {
+            setRoutes([]);
+          }
+        })
+        .finally(() => setLoading(false));
     }
   }, [id]);
 
-  if (!agency) {
+  if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {[...Array(8)].map((_, i) => (
@@ -51,12 +53,22 @@ export default function AgencyDetailPage() {
     );
   }
 
-  console.log(agency);
+  if (!agency) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <Info className="h-12 w-12 text-muted-foreground mb-4" />
+        <h2 className="text-xl font-semibold">Agency not found</h2>
+        <p className="text-muted-foreground mb-6">
+          We couldn’t find the agency you’re looking for.
+        </p>
+        <Button onClick={() => navigate("/")}>Back to Home</Button>
+      </div>
+    );
+  }
 
-  const handleRedirectBooking = (routeId) => {
+  const handleRedirectBooking = (routeId: string) => {
     try {
       const selectedRoute = routes.filter((r) => r.id === routeId);
-      console.log("selected route ", selectedRoute);
       localStorage.setItem("selectedRoute", JSON.stringify(selectedRoute));
       navigate(`/booking/${routeId}`);
     } catch (err) {
@@ -73,7 +85,9 @@ export default function AgencyDetailPage() {
           agency.name,
           "bus routes",
           "book tickets",
-          ...(Array.isArray(routes) ? routes.map((r) => `${r.origin} to ${r.destination}`) : []),
+          ...(Array.isArray(routes)
+            ? routes.map((r) => `${r.origin} to ${r.destination}`)
+            : []),
         ]}
       />
       <div className="container mx-auto px-4 py-8">
@@ -84,67 +98,75 @@ export default function AgencyDetailPage() {
         </p>
 
         <h2 className="text-2xl font-bold mb-6">Available Routes</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {routes.map((route) => (
-            <Card
-              key={route.id}
-              className="h-full hover:shadow-lg transition-shadow"
-            >
-              <CardContent className="p-6 h-full flex flex-col">
-                {/* Route Information */}
-                <div className="flex-1 space-y-4">
-                  {/* Origin → Destination */}
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                    <span className="font-medium text-sm md:text-base">
-                      {route.origin} → {route.destination}
-                    </span>
+
+        {routes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center border rounded-lg bg-muted/30">
+            <Bus className="h-14 w-14 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold">No Routes Available</h3>
+            <p className="text-muted-foreground max-w-md">
+              Currently, there are no routes listed for{" "}
+              <span className="font-medium">{agency.name}</span>.  
+              Please check back later or contact the agency directly for updates.
+            </p>
+            <Button className="mt-6" onClick={() => navigate("/agencies")}>
+              Explore Other Agencies
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {routes.map((route) => (
+              <Card
+                key={route.id}
+                className="h-full hover:shadow-lg transition-shadow"
+              >
+                <CardContent className="p-6 h-full flex flex-col">
+                  <div className="flex-1 space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                      <span className="font-medium text-sm md:text-base">
+                        {route.origin} → {route.destination}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Clock className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(route.departureTime).toLocaleString()} -{" "}
+                        {new Date(route.arrivalTime).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Users className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                      <span className="text-sm text-muted-foreground">
+                        {route.availableSeats || 45} seats available
+                      </span>
+                    </div>
+                    <Amenities amenities={route.amenities} />
                   </div>
 
-                  {/* Departure - Arrival Time */}
-                  <div className="flex items-center space-x-2">
-                    <Clock className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(route.departureTime).toLocaleString()} -{" "}
-                      {new Date(route.arrivalTime).toLocaleString()}
-                    </span>
-                  </div>
-
-                  {/* Available Seats */}
-                  <div className="flex items-center space-x-2">
-                    <Users className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm text-muted-foreground">
-                      {route.availableSeats || 45} seats available
-                    </span>
-                  </div>
-                  {/* Amenities */}
-                  <Amenities amenities={route.amenities} />
-                </div>
-
-                {/* Price and Book Button */}
-                <div className="mt-6 pt-4 border-t">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-primary">
-                        {route.price.toLocaleString()} FCFA
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        per person
+                  <div className="mt-6 pt-4 border-t">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-primary">
+                          {route.price.toLocaleString()} FCFA
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          per person
+                        </div>
                       </div>
                     </div>
+                    <Button
+                      onClick={() => handleRedirectBooking(route.id)}
+                      className="w-full"
+                    >
+                      Book Now
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button
-                    onClick={() => handleRedirectBooking(route.id)}
-                    className="w-full"
-                  >
-                    Book Now
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
